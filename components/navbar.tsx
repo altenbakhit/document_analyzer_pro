@@ -53,6 +53,11 @@ export function Navbar() {
               </>
             ) : (
               <>
+                <Link href="/pricing">
+                  <Button variant="ghost" size="sm">
+                    Pricing
+                  </Button>
+                </Link>
                 <Link href="/auth/login">
                   <Button variant="ghost" size="sm">
                     Login

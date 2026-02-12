@@ -11,7 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FileUpload } from "@/components/file-upload";
 import { LoadingAnalysis } from "@/components/loading-analysis";
-import { FileSearch, Upload, Type } from "lucide-react";
+import { FileSearch, Upload, Type, Zap } from "lucide-react";
+import Link from "next/link";
 import mammoth from "mammoth";
 
 const INDUSTRIES = [
@@ -125,7 +126,13 @@ export default function ResumeEvaluatorPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Analysis failed");
+        const errorData = await response.json().catch(() => null);
+        if (response.status === 429 && errorData?.message) {
+          setError(errorData.message);
+          setLoading(false);
+          return;
+        }
+        throw new Error(errorData?.error || "Analysis failed");
       }
 
       const result = await response.json();
@@ -164,7 +171,16 @@ export default function ResumeEvaluatorPage() {
           </div>
 
           {error && (
-            <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg mb-6">{error}</div>
+            <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg mb-6">
+              <p>{error}</p>
+              {error.includes("upgrade") && (
+                <Link href="/pricing" className="inline-block mt-2">
+                  <Button size="sm" className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600">
+                    View Plans
+                  </Button>
+                </Link>
+              )}
+            </div>
           )}
 
           <div className="space-y-6">
