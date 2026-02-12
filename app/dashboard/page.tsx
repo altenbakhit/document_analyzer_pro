@@ -7,8 +7,20 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/navbar";
 import { Button } from "@/components/ui/button";
-import { FileSearch, Shield, Clock, TrendingUp, Zap, Crown } from "lucide-react";
+import { FileSearch, Shield, Clock, TrendingUp, Zap, Crown, Download, Eye, FileText, Scale } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+
+interface RecentAnalysis {
+  id: string;
+  type: "resume" | "contract";
+  title: string;
+  subtitle: string | null;
+  score?: number | null;
+  riskLevel?: string | null;
+  fileName: string | null;
+  createdAt: string;
+}
 
 export default function DashboardPage() {
   const { data: session, status } = useSession() || {};
@@ -17,6 +29,8 @@ export default function DashboardPage() {
     resume: number; contract: number;
     plan: string; limit: number; used: number; remaining: number; period: string;
   }>({ resume: 0, contract: 0, plan: "free", limit: 3, used: 0, remaining: 3, period: "total" });
+  const [recentAnalyses, setRecentAnalyses] = useState<RecentAnalysis[]>([]);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -32,9 +46,13 @@ export default function DashboardPage() {
         .then((data) => {
           setAnalyses(data ?? { resume: 0, contract: 0 });
         })
-        .catch(() => {
-          // Silent fail
-        });
+        .catch(() => {});
+      fetch("/api/analyses/recent")
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data)) setRecentAnalyses(data);
+        })
+        .catch(() => {});
     }
   }, [status]);
 
@@ -235,7 +253,127 @@ export default function DashboardPage() {
               <Clock className="h-6 w-6 text-gray-600" />
               <h2 className="text-2xl font-bold text-gray-900">Recent Analyses</h2>
             </div>
-            <p className="text-gray-600">Your recent document analyses will appear here</p>
+            {recentAnalyses.length === 0 ? (
+              <p className="text-gray-500 text-center py-8">
+                No analyses yet. Start by analyzing a resume or contract above.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {recentAnalyses.map((item) => (
+                  <div
+                    key={`${item.type}-${item.id}`}
+                    className="flex items-center justify-between p-4 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className={`p-2.5 rounded-lg ${
+                        item.type === "resume" ? "bg-blue-100" : "bg-teal-100"
+                      }`}>
+                        {item.type === "resume" ? (
+                          <FileText className="h-5 w-5 text-blue-600" />
+                        ) : (
+                          <Scale className="h-5 w-5 text-teal-600" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <p className="font-medium text-gray-900">{item.title}</p>
+                          <Badge
+                            variant="secondary"
+                            className={`text-xs ${
+                              item.type === "resume"
+                                ? "bg-blue-50 text-blue-700"
+                                : "bg-teal-50 text-teal-700"
+                            }`}
+                          >
+                            {item.type === "resume" ? "Resume" : "Contract"}
+                          </Badge>
+                          {item.type === "resume" && item.score != null && (
+                            <Badge
+                              variant="secondary"
+                              className={`text-xs ${
+                                item.score >= 80
+                                  ? "bg-green-100 text-green-700"
+                                  : item.score >= 60
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {item.score}%
+                            </Badge>
+                          )}
+                          {item.type === "contract" && item.riskLevel && (
+                            <Badge
+                              variant="secondary"
+                              className={`text-xs ${
+                                item.riskLevel.toLowerCase() === "low"
+                                  ? "bg-green-100 text-green-700"
+                                  : item.riskLevel.toLowerCase() === "medium"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {item.riskLevel}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-2 mt-1">
+                          {item.subtitle && (
+                            <span className="text-xs text-gray-400">{item.subtitle}</span>
+                          )}
+                          <span className="text-xs text-gray-400">
+                            {new Date(item.createdAt).toLocaleDateString()} {new Date(item.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Link href={`/${item.type === "resume" ? "resume-evaluator" : "contract-evaluator"}/results/${item.id}`}>
+                        <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700">
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-gray-500 hover:text-blue-600"
+                        disabled={downloadingId === item.id}
+                        onClick={async () => {
+                          setDownloadingId(item.id);
+                          try {
+                            const res = await fetch(
+                              `/api/${item.type === "resume" ? "resume" : "contract"}/download-pdf/${item.id}`
+                            );
+                            if (!res.ok) throw new Error("Download failed");
+                            const blob = await res.blob();
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement("a");
+                            a.href = url;
+                            a.download = `${item.type}-analysis-${item.id}.pdf`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                          } catch {
+                            // Silent fail
+                          }
+                          setDownloadingId(null);
+                        }}
+                      >
+                        {downloadingId === item.id ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500" />
+                        ) : (
+                          <>
+                            <Download className="h-4 w-4 mr-1" />
+                            PDF
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </motion.div>
       </div>
