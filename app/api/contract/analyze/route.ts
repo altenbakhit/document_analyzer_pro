@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { PrismaClient } from "@prisma/client";
+import { checkAnalysisLimit, incrementAnalysisCount } from "@/lib/check-limits";
 
 const prisma = new PrismaClient();
 
@@ -13,6 +14,12 @@ export async function POST(request: Request) {
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check analysis limits
+    const limitCheck = await checkAnalysisLimit(session.user.id);
+    if (!limitCheck.allowed) {
+      return limitCheck.error;
     }
 
     const { contractContent, clientPosition, isCrossBorder, industryType, fileName } =
@@ -193,6 +200,9 @@ Respond with raw JSON only. Do not include code blocks, markdown, or any other f
         riskLevel: analysisResult?.executiveSummary?.riskLevel || null,
       },
     });
+
+    // Increment usage counter
+    await incrementAnalysisCount(session.user.id);
 
     return NextResponse.json({ id: analysis.id });
   } catch (error) {
