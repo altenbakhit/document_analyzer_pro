@@ -98,16 +98,11 @@ export function Navbar() {
                   </Button>
                 </Link>
                 <Link href="/auth/login">
-                  <Button variant="ghost" size="sm">
-                    {t("nav.login")}
-                  </Button>
-                </Link>
-                <Link href="/auth/signup">
                   <Button
                     size="sm"
                     className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600"
                   >
-                    {t("nav.signup")}
+                    {t("nav.login")}
                   </Button>
                 </Link>
               </>

@@ -55,18 +55,13 @@ export default function HomePage() {
               </Link>
             ) : (
               <>
-                <Link href="/auth/signup">
+                <Link href="/auth/login">
                   <Button
                     size="lg"
                     className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-lg px-8"
                   >
                     {t("home.getStarted")}
                     <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-                <Link href="/auth/login">
-                  <Button size="lg" variant="outline" className="text-lg px-8">
-                    {t("home.signIn")}
                   </Button>
                 </Link>
               </>
