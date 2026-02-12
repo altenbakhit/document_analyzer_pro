@@ -1,17 +1,102 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/navbar";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Check, X, Zap, Star, Crown, Rocket } from "lucide-react";
-import Link from "next/link";
+import { Check, X, Zap, Star, Crown, Rocket, CreditCard, QrCode, CheckCircle2, XCircle } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/language-context";
 
 export default function PricingPage() {
-  const { data: session } = useSession() || {};
+  const { data: session, update } = useSession() || {};
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useLanguage();
   const currentPlan = (session?.user as any)?.plan || "free";
+
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showKaspiModal, setShowKaspiModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [kaspiSent, setKaspiSent] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (searchParams.get("success") === "true") {
+      setSuccessMessage(t("payment.success"));
+      update?.();
+      router.replace("/pricing");
+    }
+    if (searchParams.get("canceled") === "true") {
+      setErrorMessage(t("payment.canceled"));
+      router.replace("/pricing");
+    }
+  }, [searchParams]);
+
+  const handleSelectPlan = (planName: string) => {
+    if (!session) {
+      router.push("/auth/login");
+      return;
+    }
+    if (planName === "enterprise") {
+      window.location.href = "mailto:bakhitzhankenzhebayev@gmail.com?subject=Enterprise Plan";
+      return;
+    }
+    setSelectedPlan(planName);
+    setShowPaymentModal(true);
+  };
+
+  const handleStripePayment = async () => {
+    if (!selectedPlan) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/payment/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: selectedPlan }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setErrorMessage(data.error || "Payment error");
+        setShowPaymentModal(false);
+      }
+    } catch {
+      setErrorMessage("Payment error");
+      setShowPaymentModal(false);
+    }
+    setLoading(false);
+  };
+
+  const handleKaspiPayment = async () => {
+    if (!selectedPlan) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/payment/kaspi-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: selectedPlan }),
+      });
+      const data = await res.json();
+      if (data.subscriptionId) {
+        setShowPaymentModal(false);
+        setShowKaspiModal(true);
+      } else {
+        setErrorMessage(data.error || "Payment error");
+        setShowPaymentModal(false);
+      }
+    } catch {
+      setErrorMessage("Payment error");
+      setShowPaymentModal(false);
+    }
+    setLoading(false);
+  };
+
+  const planPrice = selectedPlan === "basic" ? "2 990" : selectedPlan === "pro" ? "9 990" : "";
 
   const plans = [
     {
@@ -109,6 +194,21 @@ export default function PricingPage() {
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        {successMessage && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8 bg-green-50 border border-green-200 text-green-800 px-6 py-4 rounded-xl flex items-center space-x-3">
+            <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
+            <span>{successMessage}</span>
+            <button onClick={() => setSuccessMessage(null)} className="ml-auto text-green-600 hover:text-green-800">&times;</button>
+          </motion.div>
+        )}
+        {errorMessage && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8 bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-xl flex items-center space-x-3">
+            <XCircle className="h-5 w-5 flex-shrink-0" />
+            <span>{errorMessage}</span>
+            <button onClick={() => setErrorMessage(null)} className="ml-auto text-red-600 hover:text-red-800">&times;</button>
+          </motion.div>
+        )}
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -128,6 +228,7 @@ export default function PricingPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {plans.map((plan, index) => {
             const isCurrentPlan = currentPlan === plan.name;
+            const isFreePlan = plan.name === "free";
             return (
               <motion.div
                 key={plan.name}
@@ -172,7 +273,8 @@ export default function PricingPage() {
                         : "bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600"
                     }`}
                     variant={isCurrentPlan ? "secondary" : plan.buttonVariant}
-                    disabled={isCurrentPlan}
+                    disabled={isCurrentPlan || isFreePlan}
+                    onClick={() => handleSelectPlan(plan.name)}
                   >
                     {isCurrentPlan ? t("pricing.currentPlan") : t(plan.buttonTextKey)}
                   </Button>
@@ -211,6 +313,109 @@ export default function PricingPage() {
           </p>
         </motion.div>
       </div>
+
+      {/* Payment Method Modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => !loading && setShowPaymentModal(false)}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">{t("payment.chooseMethod")}</h3>
+            <p className="text-gray-500 mb-6">
+              {t("payment.planLabel")}: <span className="font-semibold">{selectedPlan === "basic" ? t("pricing.basic") : t("pricing.pro")}</span> — <span className="font-bold">{planPrice} &#8376;</span>
+            </p>
+
+            <div className="space-y-4">
+              <button
+                onClick={handleStripePayment}
+                disabled={loading}
+                className="w-full flex items-center space-x-4 p-4 border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all disabled:opacity-50"
+              >
+                <div className="bg-blue-100 p-3 rounded-lg">
+                  <CreditCard className="h-6 w-6 text-blue-600" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-gray-900">{t("payment.card")}</p>
+                  <p className="text-sm text-gray-500">Visa, Mastercard</p>
+                </div>
+              </button>
+
+              <button
+                onClick={handleKaspiPayment}
+                disabled={loading}
+                className="w-full flex items-center space-x-4 p-4 border-2 border-gray-200 rounded-xl hover:border-red-400 hover:bg-red-50 transition-all disabled:opacity-50"
+              >
+                <div className="bg-red-100 p-3 rounded-lg">
+                  <QrCode className="h-6 w-6 text-red-600" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-gray-900">Kaspi QR</p>
+                  <p className="text-sm text-gray-500">{t("payment.kaspiDesc")}</p>
+                </div>
+              </button>
+            </div>
+
+            <button
+              onClick={() => setShowPaymentModal(false)}
+              disabled={loading}
+              className="mt-6 w-full text-center text-gray-500 hover:text-gray-700 text-sm"
+            >
+              {t("payment.cancel")}
+            </button>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Kaspi QR Modal */}
+      {showKaspiModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => !loading && setShowKaspiModal(false)}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Kaspi QR</h3>
+            <p className="text-gray-600 mb-4">
+              {t("payment.kaspiScanQR")} <span className="font-bold">{planPrice} &#8376;</span>
+            </p>
+
+            <div className="flex justify-center mb-4">
+              <img
+                src="/kaspi-qr.png"
+                alt="Kaspi QR Code"
+                className="w-64 h-64 object-contain rounded-lg border border-gray-200"
+              />
+            </div>
+
+            <p className="text-sm text-gray-500 mb-2">{t("payment.kaspiRecipient")}: <span className="font-semibold">ИП FITMART</span></p>
+
+            {!kaspiSent ? (
+              <Button
+                onClick={() => setKaspiSent(true)}
+                className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 mt-4"
+              >
+                {t("payment.kaspiPaid")}
+              </Button>
+            ) : (
+              <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mt-4">
+                <CheckCircle2 className="h-5 w-5 inline mr-2" />
+                {t("payment.kaspiWaiting")}
+              </div>
+            )}
+
+            <button
+              onClick={() => { setShowKaspiModal(false); setKaspiSent(false); }}
+              className="mt-4 w-full text-center text-gray-500 hover:text-gray-700 text-sm"
+            >
+              {t("payment.close")}
+            </button>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
