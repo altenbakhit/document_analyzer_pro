@@ -12,37 +12,25 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { FileUpload } from "@/components/file-upload";
 import { LoadingAnalysis } from "@/components/loading-analysis";
-import { Shield, Upload, Type } from "lucide-react";
+import { Shield, Upload, Type, AlertTriangle, Globe } from "lucide-react";
 import Link from "next/link";
 import mammoth from "mammoth";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 const CLIENT_POSITIONS = [
-  "Buyer",
-  "Supplier",
-  "Contractor",
-  "Employer",
-  "Lessor",
-  "Lessee",
-  "Investor",
-  "Shareholder",
-  "Other",
+  "Buyer", "Supplier", "Contractor", "Employer",
+  "Lessor", "Lessee", "Investor", "Shareholder", "Other",
 ];
 
 const INDUSTRIES = [
-  "Financial Services",
-  "Oil & Gas",
-  "Mining",
-  "Manufacturing",
-  "Real Estate",
-  "Technology",
-  "Retail",
-  "Healthcare",
-  "Other",
+  "Financial Services", "Oil & Gas", "Mining", "Manufacturing",
+  "Real Estate", "Technology", "Retail", "Healthcare", "Other",
 ];
 
 export default function ContractEvaluatorPage() {
   const { data: session, status } = useSession() || {};
   const router = useRouter();
+  const { t, lang } = useLanguage();
   const [inputMethod, setInputMethod] = useState<"text" | "file">("text");
   const [contractText, setContractText] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -50,14 +38,13 @@ export default function ContractEvaluatorPage() {
   const [customPosition, setCustomPosition] = useState("");
   const [isCrossBorder, setIsCrossBorder] = useState(false);
   const [industryType, setIndustryType] = useState("");
+  const [reportLanguage, setReportLanguage] = useState(lang);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [validationWarning, setValidationWarning] = useState<string | null>(null);
+  const [validating, setValidating] = useState(false);
 
-  if (status === "unauthenticated") {
-    router.replace("/auth/login");
-    return null;
-  }
-
+  if (status === "unauthenticated") { router.replace("/auth/login"); return null; }
   if (status === "loading") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50">
@@ -72,6 +59,7 @@ export default function ContractEvaluatorPage() {
   const handleFileSelected = (selectedFile: File) => {
     setFile(selectedFile);
     setError("");
+    setValidationWarning(null);
   };
 
   const extractTextFromFile = async (file: File): Promise<string> => {
@@ -79,9 +67,7 @@ export default function ContractEvaluatorPage() {
       const arrayBuffer = await file.arrayBuffer();
       const base64 = Buffer.from(arrayBuffer).toString("base64");
       return `PDF_BASE64:${base64}`;
-    } else if (
-      file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    ) {
+    } else if (file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
       const arrayBuffer = await file.arrayBuffer();
       try {
         const result = await mammoth.extractRawText({ arrayBuffer });
@@ -95,23 +81,29 @@ export default function ContractEvaluatorPage() {
     throw new Error("Unsupported file type");
   };
 
+  const validateDocument = async (content: string) => {
+    if (content.startsWith("PDF_BASE64:")) return;
+    setValidating(true);
+    try {
+      const res = await fetch("/api/validate-document", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: content.substring(0, 2000), expectedType: "contract" }),
+      });
+      const data = await res.json();
+      if (data.isValid === false) {
+        setValidationWarning(`${t("validation.warning")} "${data.documentType}"${t("validation.notContract")}`);
+      }
+    } catch {}
+    setValidating(false);
+  };
+
   const handleAnalyze = async () => {
     const finalPosition = clientPosition === "Other" ? customPosition : clientPosition;
 
-    if (!finalPosition) {
-      setError("Please select or enter client position");
-      return;
-    }
-
-    if (inputMethod === "text" && !contractText) {
-      setError("Please enter contract text");
-      return;
-    }
-
-    if (inputMethod === "file" && !file) {
-      setError("Please upload a file");
-      return;
-    }
+    if (!finalPosition) { setError(t("contract.selectOrEnter")); return; }
+    if (inputMethod === "text" && !contractText) { setError(t("contract.enterText")); return; }
+    if (inputMethod === "file" && !file) { setError(t("contract.uploadFileMsg")); return; }
 
     setLoading(true);
     setError("");
@@ -125,24 +117,24 @@ export default function ContractEvaluatorPage() {
         contractContent = await extractTextFromFile(file);
       }
 
+      // Validate before analyzing
+      if (!validationWarning && contractContent && !contractContent.startsWith("PDF_BASE64:")) {
+        await validateDocument(contractContent);
+      }
+
       const response = await fetch("/api/contract/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contractContent,
-          clientPosition: finalPosition,
-          isCrossBorder,
-          industryType: industryType || null,
-          fileName,
+          contractContent, clientPosition: finalPosition, isCrossBorder,
+          industryType: industryType || null, fileName, reportLanguage,
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         if (response.status === 429 && errorData?.message) {
-          setError(errorData.message);
-          setLoading(false);
-          return;
+          setError(errorData.message); setLoading(false); return;
         }
         throw new Error(errorData?.error || "Analysis failed");
       }
@@ -150,7 +142,7 @@ export default function ContractEvaluatorPage() {
       const result = await response.json();
       router.push(`/contract-evaluator/results/${result.id}`);
     } catch (err) {
-      setError("Failed to analyze contract. Please try again.");
+      setError(t("contract.selectOrEnter"));
       setLoading(false);
     }
   };
@@ -159,9 +151,7 @@ export default function ContractEvaluatorPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50">
         <Navbar />
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <LoadingAnalysis />
-        </div>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12"><LoadingAnalysis /></div>
       </div>
     );
   }
@@ -169,7 +159,6 @@ export default function ContractEvaluatorPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50">
       <Navbar />
-
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="bg-white rounded-2xl shadow-lg p-8">
           <div className="flex items-center space-x-3 mb-8">
@@ -177,8 +166,8 @@ export default function ContractEvaluatorPage() {
               <Shield className="h-8 w-8 text-teal-600" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Contract Evaluator</h1>
-              <p className="text-gray-600">Legal analysis based on Kazakhstan legislation</p>
+              <h1 className="text-3xl font-bold text-gray-900">{t("contract.title")}</h1>
+              <p className="text-gray-600">{t("contract.subtitle")}</p>
             </div>
           </div>
 
@@ -188,127 +177,112 @@ export default function ContractEvaluatorPage() {
               {error.includes("upgrade") && (
                 <Link href="/pricing" className="inline-block mt-2">
                   <Button size="sm" className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600">
-                    View Plans
+                    {t("contract.viewPlans")}
                   </Button>
                 </Link>
               )}
             </div>
           )}
 
+          {validationWarning && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg mb-6">
+              <div className="flex items-start space-x-3">
+                <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm">{validationWarning}</p>
+                  <div className="flex space-x-3 mt-2">
+                    <Button size="sm" variant="outline" onClick={() => setValidationWarning(null)}>
+                      {t("validation.continueAnyway")}
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => { setValidationWarning(null); setContractText(""); setFile(null); }}>
+                      {t("validation.cancel")}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="space-y-6">
-            {/* Input Method Toggle */}
             <div>
-              <Label className="text-gray-700 mb-3 block">Contract Input Method</Label>
+              <Label className="text-gray-700 mb-3 block">{t("contract.inputMethod")}</Label>
               <div className="flex space-x-4">
-                <Button
-                  type="button"
-                  variant={inputMethod === "text" ? "default" : "outline"}
-                  onClick={() => setInputMethod("text")}
-                  className="flex items-center space-x-2"
-                >
-                  <Type className="h-4 w-4" />
-                  <span>Paste Text</span>
+                <Button type="button" variant={inputMethod === "text" ? "default" : "outline"} onClick={() => setInputMethod("text")} className="flex items-center space-x-2">
+                  <Type className="h-4 w-4" /><span>{t("contract.pasteText")}</span>
                 </Button>
-                <Button
-                  type="button"
-                  variant={inputMethod === "file" ? "default" : "outline"}
-                  onClick={() => setInputMethod("file")}
-                  className="flex items-center space-x-2"
-                >
-                  <Upload className="h-4 w-4" />
-                  <span>Upload File</span>
+                <Button type="button" variant={inputMethod === "file" ? "default" : "outline"} onClick={() => setInputMethod("file")} className="flex items-center space-x-2">
+                  <Upload className="h-4 w-4" /><span>{t("contract.uploadFile")}</span>
                 </Button>
               </div>
             </div>
 
-            {/* Contract Input */}
             {inputMethod === "text" ? (
               <div>
-                <Label htmlFor="contractText" className="text-gray-700">
-                  Contract Text *
-                </Label>
-                <Textarea
-                  id="contractText"
-                  value={contractText}
-                  onChange={(e) => setContractText(e.target.value)}
-                  rows={10}
-                  placeholder="Paste your contract text here..."
-                  className="mt-2"
+                <Label htmlFor="contractText" className="text-gray-700">{t("contract.contractText")} *</Label>
+                <Textarea id="contractText" value={contractText} onChange={(e) => { setContractText(e.target.value); setValidationWarning(null); }} rows={10} placeholder={t("contract.contractPlaceholder")} className="mt-2"
+                  onBlur={() => { if (contractText.length > 100) validateDocument(contractText); }}
                 />
               </div>
             ) : (
               <div>
-                <Label className="text-gray-700 mb-2 block">Upload Contract *</Label>
+                <Label className="text-gray-700 mb-2 block">{t("contract.uploadContract")} *</Label>
                 <FileUpload onFileSelected={handleFileSelected} />
               </div>
             )}
 
-            {/* Client Position */}
             <div>
-              <Label className="text-gray-700 mb-2 block">Client Position *</Label>
+              <Label className="text-gray-700 mb-2 block">{t("contract.clientPosition")} *</Label>
               <Select value={clientPosition} onValueChange={setClientPosition}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select your position in the contract" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("contract.selectPosition")} /></SelectTrigger>
                 <SelectContent>
-                  {CLIENT_POSITIONS.map((pos) => (
-                    <SelectItem key={pos} value={pos}>
-                      {pos}
-                    </SelectItem>
-                  ))}
+                  {CLIENT_POSITIONS.map((pos) => (<SelectItem key={pos} value={pos}>{pos}</SelectItem>))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Custom Position (if Other selected) */}
             {clientPosition === "Other" && (
               <div>
-                <Label htmlFor="customPosition" className="text-gray-700">
-                  Specify Position *
-                </Label>
-                <Input
-                  id="customPosition"
-                  value={customPosition}
-                  onChange={(e) => setCustomPosition(e.target.value)}
-                  placeholder="Enter your position..."
-                  className="mt-2"
-                />
+                <Label htmlFor="customPosition" className="text-gray-700">{t("contract.specifyPosition")} *</Label>
+                <Input id="customPosition" value={customPosition} onChange={(e) => setCustomPosition(e.target.value)} placeholder={t("contract.enterPosition")} className="mt-2" />
               </div>
             )}
 
-            {/* Cross-Border Toggle */}
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div>
-                <Label className="text-gray-700">Cross-Border Transaction</Label>
-                <p className="text-sm text-gray-500">Is this an international contract?</p>
+                <Label className="text-gray-700">{t("contract.crossBorder")}</Label>
+                <p className="text-sm text-gray-500">{t("contract.crossBorderDesc")}</p>
               </div>
               <Switch checked={isCrossBorder} onCheckedChange={setIsCrossBorder} />
             </div>
 
-            {/* Industry Type (Optional) */}
             <div>
-              <Label className="text-gray-700 mb-2 block">Industry Type (Optional)</Label>
+              <Label className="text-gray-700 mb-2 block">{t("contract.industryType")}</Label>
               <Select value={industryType} onValueChange={setIndustryType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select industry" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("contract.selectIndustry")} /></SelectTrigger>
                 <SelectContent>
-                  {INDUSTRIES.map((ind) => (
-                    <SelectItem key={ind} value={ind}>
-                      {ind}
-                    </SelectItem>
-                  ))}
+                  {INDUSTRIES.map((ind) => (<SelectItem key={ind} value={ind}>{ind}</SelectItem>))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Submit Button */}
-            <Button
-              onClick={handleAnalyze}
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-lg py-6"
-            >
-              Analyze Contract
+            {/* Report Language Selector */}
+            <div>
+              <Label className="text-gray-700 mb-2 flex items-center space-x-2">
+                <Globe className="h-4 w-4" />
+                <span>{t("contract.reportLanguage")}</span>
+              </Label>
+              <Select value={reportLanguage} onValueChange={(v: any) => setReportLanguage(v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="kk">{t("reportLang.kk")}</SelectItem>
+                  <SelectItem value="ru">{t("reportLang.ru")}</SelectItem>
+                  <SelectItem value="en">{t("reportLang.en")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button onClick={handleAnalyze} disabled={loading || validating} className="w-full bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-lg py-6">
+              {validating ? t("validation.checking") : t("contract.analyzeBtn")}
             </Button>
           </div>
         </div>

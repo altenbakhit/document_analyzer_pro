@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       return limitCheck.error;
     }
 
-    const { contractContent, clientPosition, isCrossBorder, industryType, fileName } =
+    const { contractContent, clientPosition, isCrossBorder, industryType, fileName, reportLanguage } =
       await request.json();
 
     if (!contractContent || !clientPosition) {
@@ -67,7 +67,12 @@ ${contractContent}`,
       ];
     }
 
-    const systemPrompt = `You are an expert legal analyst specializing in Kazakhstan commercial law. Analyze contracts based on RK legislation including Civil Code, Civil Procedure Code, Entrepreneurial Code, Tax Code, and AML/CFT laws.
+    const langMap: Record<string, string> = { kk: "Kazakh (Қазақ тілі)", ru: "Russian (Русский)", en: "English" };
+    const targetLang = langMap[reportLanguage] || "English";
+
+    const systemPrompt = `IMPORTANT: Provide your ENTIRE response in ${targetLang}. All text fields, analysis, recommendations, legal references, and conclusions must be written in ${targetLang}.
+
+You are an expert legal analyst specializing in Kazakhstan commercial law. Analyze contracts based on RK legislation including Civil Code, Civil Procedure Code, Entrepreneurial Code, Tax Code, and AML/CFT laws.
 
 Provide a comprehensive legal analysis in JSON format:
 {

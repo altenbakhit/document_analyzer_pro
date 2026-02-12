@@ -6,97 +6,103 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Check, X, Zap, Star, Crown, Rocket } from "lucide-react";
 import Link from "next/link";
-
-const plans = [
-  {
-    name: "Free",
-    price: "0",
-    currency: "₸",
-    period: "",
-    description: "Try out Document Analyzer",
-    icon: Zap,
-    color: "from-gray-400 to-gray-500",
-    features: [
-      { text: "3 analyses total", included: true },
-      { text: "Resume analysis", included: true },
-      { text: "Contract analysis", included: true },
-      { text: "PDF report export", included: true },
-      { text: "Monthly reset", included: false },
-      { text: "Priority processing", included: false },
-      { text: "API access", included: false },
-    ],
-    buttonText: "Current Plan",
-    buttonVariant: "outline" as const,
-    popular: false,
-  },
-  {
-    name: "Basic",
-    price: "2,990",
-    currency: "₸",
-    period: "/month",
-    description: "For regular document analysis",
-    icon: Star,
-    color: "from-blue-500 to-blue-600",
-    features: [
-      { text: "5 analyses per month", included: true },
-      { text: "Resume analysis", included: true },
-      { text: "Contract analysis", included: true },
-      { text: "PDF report export", included: true },
-      { text: "Monthly reset", included: true },
-      { text: "Priority processing", included: false },
-      { text: "API access", included: false },
-    ],
-    buttonText: "Get Basic",
-    buttonVariant: "default" as const,
-    popular: false,
-  },
-  {
-    name: "Pro",
-    price: "9,990",
-    currency: "₸",
-    period: "/month",
-    description: "Unlimited analysis power",
-    icon: Crown,
-    color: "from-purple-500 to-purple-600",
-    features: [
-      { text: "Unlimited analyses", included: true },
-      { text: "Resume analysis", included: true },
-      { text: "Contract analysis", included: true },
-      { text: "PDF report export", included: true },
-      { text: "Monthly reset", included: true },
-      { text: "Priority processing", included: true },
-      { text: "API access", included: false },
-    ],
-    buttonText: "Get Pro",
-    buttonVariant: "default" as const,
-    popular: true,
-  },
-  {
-    name: "Enterprise",
-    price: "Custom",
-    currency: "",
-    period: "",
-    description: "For teams and organizations",
-    icon: Rocket,
-    color: "from-amber-500 to-orange-500",
-    features: [
-      { text: "Unlimited analyses", included: true },
-      { text: "Resume analysis", included: true },
-      { text: "Contract analysis", included: true },
-      { text: "PDF report export", included: true },
-      { text: "Monthly reset", included: true },
-      { text: "Priority processing", included: true },
-      { text: "API access", included: true },
-    ],
-    buttonText: "Contact Us",
-    buttonVariant: "outline" as const,
-    popular: false,
-  },
-];
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export default function PricingPage() {
   const { data: session } = useSession() || {};
+  const { t } = useLanguage();
   const currentPlan = (session?.user as any)?.plan || "free";
+
+  const plans = [
+    {
+      nameKey: "pricing.free",
+      descKey: "pricing.freeDesc",
+      name: "free",
+      price: "0",
+      currency: "\u20B8",
+      period: "",
+      icon: Zap,
+      color: "from-gray-400 to-gray-500",
+      features: [
+        { textKey: "pricing.analysesTotal", prefix: "3 ", included: true },
+        { textKey: "pricing.resumeAnalysis", included: true },
+        { textKey: "pricing.contractAnalysis", included: true },
+        { textKey: "pricing.pdfExport", included: true },
+        { textKey: "pricing.monthlyReset", included: false },
+        { textKey: "pricing.priority", included: false },
+        { textKey: "pricing.apiAccess", included: false },
+      ],
+      buttonTextKey: "pricing.currentPlan",
+      buttonVariant: "outline" as const,
+      popular: false,
+    },
+    {
+      nameKey: "pricing.basic",
+      descKey: "pricing.basicDesc",
+      name: "basic",
+      price: "2,990",
+      currency: "\u20B8",
+      period: "pricing.month",
+      icon: Star,
+      color: "from-blue-500 to-blue-600",
+      features: [
+        { textKey: "pricing.analysesMonth", prefix: "5 ", included: true },
+        { textKey: "pricing.resumeAnalysis", included: true },
+        { textKey: "pricing.contractAnalysis", included: true },
+        { textKey: "pricing.pdfExport", included: true },
+        { textKey: "pricing.monthlyReset", included: true },
+        { textKey: "pricing.priority", included: false },
+        { textKey: "pricing.apiAccess", included: false },
+      ],
+      buttonTextKey: "pricing.getBasic",
+      buttonVariant: "default" as const,
+      popular: false,
+    },
+    {
+      nameKey: "pricing.pro",
+      descKey: "pricing.proDesc",
+      name: "pro",
+      price: "9,990",
+      currency: "\u20B8",
+      period: "pricing.month",
+      icon: Crown,
+      color: "from-purple-500 to-purple-600",
+      features: [
+        { textKey: "pricing.unlimited", included: true },
+        { textKey: "pricing.resumeAnalysis", included: true },
+        { textKey: "pricing.contractAnalysis", included: true },
+        { textKey: "pricing.pdfExport", included: true },
+        { textKey: "pricing.monthlyReset", included: true },
+        { textKey: "pricing.priority", included: true },
+        { textKey: "pricing.apiAccess", included: false },
+      ],
+      buttonTextKey: "pricing.getPro",
+      buttonVariant: "default" as const,
+      popular: true,
+    },
+    {
+      nameKey: "pricing.enterprise",
+      descKey: "pricing.enterpriseDesc",
+      name: "enterprise",
+      price: "Custom",
+      currency: "",
+      period: "",
+      icon: Rocket,
+      color: "from-amber-500 to-orange-500",
+      features: [
+        { textKey: "pricing.unlimited", included: true },
+        { textKey: "pricing.resumeAnalysis", included: true },
+        { textKey: "pricing.contractAnalysis", included: true },
+        { textKey: "pricing.pdfExport", included: true },
+        { textKey: "pricing.monthlyReset", included: true },
+        { textKey: "pricing.priority", included: true },
+        { textKey: "pricing.apiAccess", included: true },
+      ],
+      buttonTextKey: "pricing.contactUs",
+      buttonVariant: "outline" as const,
+      popular: false,
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50">
@@ -109,19 +115,19 @@ export default function PricingPage() {
           className="text-center mb-16"
         >
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Choose Your{" "}
+            {t("pricing.title")}{" "}
             <span className="bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
-              Plan
+              {t("pricing.titleHighlight")}
             </span>
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Start for free, upgrade as you grow. All plans include AI-powered document analysis.
+            {t("pricing.subtitle")}
           </p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {plans.map((plan, index) => {
-            const isCurrentPlan = currentPlan === plan.name.toLowerCase();
+            const isCurrentPlan = currentPlan === plan.name;
             return (
               <motion.div
                 key={plan.name}
@@ -134,7 +140,7 @@ export default function PricingPage() {
               >
                 {plan.popular && (
                   <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-center text-sm font-medium py-1">
-                    Most Popular
+                    {t("pricing.popular")}
                   </div>
                 )}
 
@@ -143,15 +149,15 @@ export default function PricingPage() {
                     <plan.icon className="h-6 w-6 text-white" />
                   </div>
 
-                  <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
-                  <p className="text-sm text-gray-500 mt-1">{plan.description}</p>
+                  <h3 className="text-xl font-bold text-gray-900">{t(plan.nameKey)}</h3>
+                  <p className="text-sm text-gray-500 mt-1">{t(plan.descKey)}</p>
 
                   <div className="mt-4 mb-6">
                     <span className="text-4xl font-bold text-gray-900">
                       {plan.currency}{plan.price}
                     </span>
                     {plan.period && (
-                      <span className="text-gray-500">{plan.period}</span>
+                      <span className="text-gray-500">{t(plan.period)}</span>
                     )}
                   </div>
 
@@ -168,19 +174,19 @@ export default function PricingPage() {
                     variant={isCurrentPlan ? "secondary" : plan.buttonVariant}
                     disabled={isCurrentPlan}
                   >
-                    {isCurrentPlan ? "Current Plan" : plan.buttonText}
+                    {isCurrentPlan ? t("pricing.currentPlan") : t(plan.buttonTextKey)}
                   </Button>
 
                   <div className="mt-6 space-y-3">
                     {plan.features.map((feature) => (
-                      <div key={feature.text} className="flex items-center space-x-3">
+                      <div key={feature.textKey} className="flex items-center space-x-3">
                         {feature.included ? (
                           <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
                         ) : (
                           <X className="h-4 w-4 text-gray-300 flex-shrink-0" />
                         )}
                         <span className={`text-sm ${feature.included ? "text-gray-700" : "text-gray-400"}`}>
-                          {feature.text}
+                          {feature.prefix || ""}{t(feature.textKey)}
                         </span>
                       </div>
                     ))}
@@ -191,7 +197,6 @@ export default function PricingPage() {
           })}
         </div>
 
-        {/* FAQ or info */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -199,7 +204,7 @@ export default function PricingPage() {
           className="mt-16 text-center"
         >
           <p className="text-gray-500">
-            Questions? Contact us at{" "}
+            {t("pricing.questions")}{" "}
             <a href="mailto:bakhitzhankenzhebayev@gmail.com" className="text-blue-600 hover:underline">
               bakhitzhankenzhebayev@gmail.com
             </a>

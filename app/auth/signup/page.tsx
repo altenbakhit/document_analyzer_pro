@@ -8,9 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FileText, Lock, Mail, User } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export default function SignupPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,12 +33,11 @@ export default function SignupPage() {
 
       if (!response.ok) {
         const data = await response.json();
-        setError(data?.error || "Something went wrong");
+        setError(data?.error || t("auth.somethingWrong"));
         setLoading(false);
         return;
       }
 
-      // Auto login after signup
       const result = await signIn("credentials", {
         redirect: false,
         email,
@@ -44,12 +45,12 @@ export default function SignupPage() {
       });
 
       if (result?.error) {
-        setError("Account created but login failed. Please try logging in.");
+        setError(t("auth.somethingWrong"));
       } else {
         router.replace("/dashboard");
       }
     } catch (err) {
-      setError("Something went wrong");
+      setError(t("auth.somethingWrong"));
     } finally {
       setLoading(false);
     }
@@ -64,8 +65,8 @@ export default function SignupPage() {
               <FileText className="h-10 w-10 text-white" />
             </div>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
-          <p className="mt-2 text-gray-600">Join Document Analyzer Pro today</p>
+          <h2 className="text-3xl font-bold text-gray-900">{t("auth.createAccount")}</h2>
+          <p className="mt-2 text-gray-600">{t("auth.signupDesc")}</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg p-8">
@@ -78,7 +79,7 @@ export default function SignupPage() {
 
             <div>
               <Label htmlFor="name" className="text-gray-700">
-                Full Name
+                {t("auth.fullName")}
               </Label>
               <div className="mt-1 relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -96,7 +97,7 @@ export default function SignupPage() {
 
             <div>
               <Label htmlFor="email" className="text-gray-700">
-                Email Address
+                {t("auth.email")}
               </Label>
               <div className="mt-1 relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -114,7 +115,7 @@ export default function SignupPage() {
 
             <div>
               <Label htmlFor="password" className="text-gray-700">
-                Password
+                {t("auth.password")}
               </Label>
               <div className="mt-1 relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -136,15 +137,15 @@ export default function SignupPage() {
               disabled={loading}
               className="w-full bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600"
             >
-              {loading ? "Creating account..." : "Sign Up"}
+              {loading ? t("auth.signingUp") : t("auth.signUpBtn")}
             </Button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-gray-600">
-              Already have an account?{" "}
+              {t("auth.haveAccount")}{" "}
               <Link href="/auth/login" className="text-blue-600 hover:text-blue-700 font-medium">
-                Sign in
+                {t("auth.signInLink")}
               </Link>
             </p>
           </div>

@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       return limitCheck.error;
     }
 
-    const { resumeContent, targetJobTitle, industry, jobDescription, fileName } =
+    const { resumeContent, targetJobTitle, industry, jobDescription, fileName, reportLanguage } =
       await request.json();
 
     if (!resumeContent || !targetJobTitle || !industry) {
@@ -69,7 +69,12 @@ ${resumeContent}`,
       ];
     }
 
-    const systemPrompt = `You are an expert resume analyzer. Provide a comprehensive resume analysis in JSON format with the following structure:
+    const langMap: Record<string, string> = { kk: "Kazakh (Қазақ тілі)", ru: "Russian (Русский)", en: "English" };
+    const targetLang = langMap[reportLanguage] || "English";
+
+    const systemPrompt = `IMPORTANT: Provide your ENTIRE response in ${targetLang}. All text fields, analysis, recommendations, strengths, weaknesses must be written in ${targetLang}.
+
+You are an expert resume analyzer. Provide a comprehensive resume analysis in JSON format with the following structure:
 {
   "overallScore": <number between 0-100>,
   "summary": "<brief overall assessment>",

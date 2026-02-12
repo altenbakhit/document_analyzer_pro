@@ -6,9 +6,11 @@ import { FileText, FileSearch, Shield, Sparkles, ArrowRight } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/navbar";
 import { useSession } from "next-auth/react";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export default function HomePage() {
   const { data: session } = useSession() || {};
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50">
@@ -29,16 +31,15 @@ export default function HomePage() {
           </div>
 
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900">
-            Powerful AI-Powered
+            {t("home.heroTitle1")}
             <br />
             <span className="bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
-              Document Analysis
+              {t("home.heroTitle2")}
             </span>
           </h1>
 
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Leverage advanced artificial intelligence to analyze resumes and contracts with precision.
-            Get instant insights, risk assessments, and actionable recommendations.
+            {t("home.heroDesc")}
           </p>
 
           <div className="flex items-center justify-center space-x-4">
@@ -48,7 +49,7 @@ export default function HomePage() {
                   size="lg"
                   className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-lg px-8"
                 >
-                  Go to Dashboard
+                  {t("home.goToDashboard")}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
@@ -59,13 +60,13 @@ export default function HomePage() {
                     size="lg"
                     className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-lg px-8"
                   >
-                    Get Started Free
+                    {t("home.getStarted")}
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
                 <Link href="/auth/login">
                   <Button size="lg" variant="outline" className="text-lg px-8">
-                    Sign In
+                    {t("home.signIn")}
                   </Button>
                 </Link>
               </>
@@ -94,31 +95,12 @@ export default function HomePage() {
                   <FileSearch className="h-8 w-8 text-blue-600" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Resume Evaluator</h3>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">{t("home.resumeTitle")}</h3>
                   <p className="text-gray-600 mb-4">
-                    Comprehensive resume analysis with ATS optimization, content quality assessment,
-                    and role alignment insights.
+                    {t("home.resumeDesc")}
                   </p>
-                  <ul className="space-y-2 text-sm text-gray-600">
-                    <li className="flex items-center space-x-2">
-                      <div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div>
-                      <span>Structure & formatting analysis</span>
-                    </li>
-                    <li className="flex items-center space-x-2">
-                      <div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div>
-                      <span>ATS keyword optimization</span>
-                    </li>
-                    <li className="flex items-center space-x-2">
-                      <div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div>
-                      <span>Role & industry alignment</span>
-                    </li>
-                    <li className="flex items-center space-x-2">
-                      <div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div>
-                      <span>Detailed PDF reports</span>
-                    </li>
-                  </ul>
                   <Button className="mt-6 w-full bg-blue-500 hover:bg-blue-600">
-                    Analyze Resume
+                    {t("home.startAnalysis")}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
@@ -137,34 +119,12 @@ export default function HomePage() {
                   <Shield className="h-8 w-8 text-teal-600" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                    Contract Evaluator
-                    <span className="text-sm font-normal text-gray-500 ml-2">(Kazakhstan Law)</span>
-                  </h3>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">{t("home.contractTitle")}</h3>
                   <p className="text-gray-600 mb-4">
-                    Legal contract analysis based on Kazakhstan legislation with risk assessment,
-                    compliance checks, and precise recommendations.
+                    {t("home.contractDesc")}
                   </p>
-                  <ul className="space-y-2 text-sm text-gray-600">
-                    <li className="flex items-center space-x-2">
-                      <div className="h-1.5 w-1.5 rounded-full bg-teal-500"></div>
-                      <span>Legal validity assessment</span>
-                    </li>
-                    <li className="flex items-center space-x-2">
-                      <div className="h-1.5 w-1.5 rounded-full bg-teal-500"></div>
-                      <span>Multi-dimensional risk matrix</span>
-                    </li>
-                    <li className="flex items-center space-x-2">
-                      <div className="h-1.5 w-1.5 rounded-full bg-teal-500"></div>
-                      <span>Clause-by-clause analysis</span>
-                    </li>
-                    <li className="flex items-center space-x-2">
-                      <div className="h-1.5 w-1.5 rounded-full bg-teal-500"></div>
-                      <span>Tax & litigation risk assessment</span>
-                    </li>
-                  </ul>
                   <Button className="mt-6 w-full bg-teal-500 hover:bg-teal-600">
-                    Analyze Contract
+                    {t("home.startAnalysis")}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
@@ -177,7 +137,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-300 py-8 mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p>&copy; 2026 Document Analyzer Pro. All rights reserved.</p>
+          <p>&copy; 2026 Document Analyzer Pro.</p>
         </div>
       </footer>
     </div>
