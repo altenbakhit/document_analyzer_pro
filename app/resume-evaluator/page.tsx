@@ -232,7 +232,7 @@ export default function ResumeEvaluatorPage() {
               <Select value={industry} onValueChange={setIndustry}>
                 <SelectTrigger><SelectValue placeholder={t("resume.selectIndustry")} /></SelectTrigger>
                 <SelectContent>
-                  {INDUSTRIES.map((ind) => (<SelectItem key={ind} value={ind}>{ind}</SelectItem>))}
+                  {INDUSTRIES.map((ind) => (<SelectItem key={ind} value={ind}>{t(`industries.${ind}`) || ind}</SelectItem>))}
                 </SelectContent>
               </Select>
             </div>

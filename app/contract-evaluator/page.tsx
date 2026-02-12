@@ -235,7 +235,7 @@ export default function ContractEvaluatorPage() {
               <Select value={clientPosition} onValueChange={setClientPosition}>
                 <SelectTrigger><SelectValue placeholder={t("contract.selectPosition")} /></SelectTrigger>
                 <SelectContent>
-                  {CLIENT_POSITIONS.map((pos) => (<SelectItem key={pos} value={pos}>{pos}</SelectItem>))}
+                  {CLIENT_POSITIONS.map((pos) => (<SelectItem key={pos} value={pos}>{t(`positions.${pos}`) || pos}</SelectItem>))}
                 </SelectContent>
               </Select>
             </div>
@@ -260,7 +260,7 @@ export default function ContractEvaluatorPage() {
               <Select value={industryType} onValueChange={setIndustryType}>
                 <SelectTrigger><SelectValue placeholder={t("contract.selectIndustry")} /></SelectTrigger>
                 <SelectContent>
-                  {INDUSTRIES.map((ind) => (<SelectItem key={ind} value={ind}>{ind}</SelectItem>))}
+                  {INDUSTRIES.map((ind) => (<SelectItem key={ind} value={ind}>{t(`industries.${ind}`) || ind}</SelectItem>))}
                 </SelectContent>
               </Select>
             </div>
