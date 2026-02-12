@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { FileText, LogOut, User } from "lucide-react";
+import { FileText, LogOut, User, Shield } from "lucide-react";
 
 export function Navbar() {
   const { data: session, status } = useSession() || {};
@@ -29,6 +29,14 @@ export function Navbar() {
                     Dashboard
                   </Button>
                 </Link>
+                {session?.user?.role === "admin" && (
+                  <Link href="/admin">
+                    <Button variant="ghost" size="sm" className="text-purple-600 hover:text-purple-700">
+                      <Shield className="h-4 w-4 mr-1" />
+                      Admin
+                    </Button>
+                  </Link>
+                )}
                 <div className="flex items-center space-x-2 text-sm text-gray-600">
                   <User className="h-4 w-4" />
                   <span>{session?.user?.email}</span>
