@@ -5,11 +5,19 @@ import { authOptions } from "@/lib/auth-options";
 
 const prisma = new PrismaClient();
 
+function isValidApiKey(request: Request): boolean {
+  const authHeader = request.headers.get("Authorization");
+  const apiKey = authHeader?.replace("Bearer ", "");
+  return !!apiKey && apiKey === process.env.BLOG_API_KEY;
+}
+
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || session.user.role !== "admin") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!isValidApiKey(request)) {
+      const session = await getServerSession(authOptions);
+      if (!session?.user || session.user.role !== "admin") {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
     }
 
     const data = await request.json();
@@ -26,9 +34,11 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || session.user.role !== "admin") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!isValidApiKey(request)) {
+      const session = await getServerSession(authOptions);
+      if (!session?.user || session.user.role !== "admin") {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
     }
 
     await prisma.blogPost.delete({ where: { id: params.id } });
