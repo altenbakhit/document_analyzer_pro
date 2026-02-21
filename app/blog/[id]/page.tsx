@@ -76,6 +76,8 @@ export default async function BlogPostPage({ params }: Props) {
         contentZh: post.contentZh,
         author: post.author,
         imageUrl: post.imageUrl,
+        sourceUrl: post.sourceUrl,
+        aiGenerated: post.aiGenerated,
         createdAt: post.createdAt.toISOString(),
       }} />
     </>

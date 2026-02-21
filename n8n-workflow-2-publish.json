@@ -1,0 +1,194 @@
+{
+  "name": "Alten Blog - Публикация одобренных",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "id": "schedule-2",
+      "name": "Каждые 30 минут",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "1E0sUIioBrDfRdCim9Lvu2yAkYtKX-y0lyot6uqC-W1w",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "list",
+          "cachedResultName": "Sheet1"
+        },
+        "options": {}
+      },
+      "id": "sheets-read",
+      "name": "Прочитать таблицу",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [250, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": ""
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "approved",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "filter-approved",
+      "name": "Только approved",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [500, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://alten.kz/api/blog",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ВСТАВЬТЕ_ВАШ_BLOG_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({titleRu: $json.title_ru, contentRu: $json.content_ru, sourceUrl: $json.source_url, author: 'Кенжебаев Бакытжан', aiGenerated: true, published: true}) }}"
+      },
+      "id": "http-blog",
+      "name": "Опубликовать в блог",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [750, 0]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const blogPost = $input.item.json;\nconst originalRow = $('Только approved').item.json;\n\nreturn {\n  json: {\n    source_url: originalRow.source_url,\n    status: 'published',\n    post_id: blogPost.id\n  }\n};"
+      },
+      "id": "code-update",
+      "name": "Подготовить обновление",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1000, 0]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1E0sUIioBrDfRdCim9Lvu2yAkYtKX-y0lyot6uqC-W1w",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "list",
+          "cachedResultName": "Sheet1"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "matchingColumns": ["source_url"]
+        },
+        "options": {}
+      },
+      "id": "sheets-update",
+      "name": "Обновить таблицу",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1250, 0]
+    }
+  ],
+  "connections": {
+    "Каждые 30 минут": {
+      "main": [
+        [
+          {
+            "node": "Прочитать таблицу",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Прочитать таблицу": {
+      "main": [
+        [
+          {
+            "node": "Только approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Только approved": {
+      "main": [
+        [
+          {
+            "node": "Опубликовать в блог",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Опубликовать в блог": {
+      "main": [
+        [
+          {
+            "node": "Подготовить обновление",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Подготовить обновление": {
+      "main": [
+        [
+          {
+            "node": "Обновить таблицу",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [],
+  "pinData": {}
+}

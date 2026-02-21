@@ -136,9 +136,35 @@ model BlogPost {
   contentZh String?  @db.Text
   author    String?
   imageUrl  String?
+  sourceUrl String?
+  aiGenerated Boolean @default(false)
   published Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  likes     BlogLike[]
+  comments  BlogComment[]
+}
+
+model BlogLike {
+  id        String   @id @default(cuid())
+  postId    String
+  sessionId String
+  createdAt DateTime @default(now())
+
+  post BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, sessionId])
+}
+
+model BlogComment {
+  id        String   @id @default(cuid())
+  postId    String
+  author    String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  post BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
 
 model TemplateDocument {

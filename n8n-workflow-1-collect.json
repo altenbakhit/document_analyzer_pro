@@ -1,0 +1,187 @@
+{
+  "name": "Alten Blog - Сбор новостей",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24,
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "schedule-1",
+      "name": "Каждый день в 9:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "url": "https://www.zakon.kz/rss/"
+      },
+      "id": "rss-1",
+      "name": "Zakon.kz RSS",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [250, 0]
+    },
+    {
+      "parameters": {
+        "maxItems": 3
+      },
+      "id": "limit-1",
+      "name": "Топ 3 новости",
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [500, 0]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const title = $input.item.json.title || '';\nconst snippet = ($input.item.json.contentSnippet || $input.item.json.content || '').replace(/<[^>]*>/g, '');\nconst link = $input.item.json.link || '';\n\nreturn {\n  json: {\n    prompt: `Ты — юрист из компании Alten Consulting, Алматы, Казахстан.\n\nНа основе этой новости напиши ОРИГИНАЛЬНЫЙ юридический комментарий для блога. НЕ КОПИРУЙ текст новости — напиши своё профессиональное мнение юриста. Это должен быть авторский анализ, а не пересказ.\n\nСтруктура текста:\n1. О чём событие (1-2 предложения своими словами)\n2. Юридический анализ: какие законы и нормы РК затронуты\n3. Что это значит для граждан и бизнеса Казахстана\n4. Рекомендации от юриста\n\nВ конце текста ОБЯЗАТЕЛЬНО добавь абзац:\n\"Источник новости: [название СМИ]. Данный материал представляет собой мнение юриста и не является копией оригинальной публикации.\"\n\nОтветь СТРОГО в формате JSON без markdown блоков:\n{\"title\": \"краткий юридический заголовок\", \"content\": \"полный текст комментария из 3-5 абзацев\"}\n\nНовость: ${title}\n${snippet}`,\n    sourceUrl: link\n  }\n};"
+      },
+      "id": "code-prompt",
+      "name": "Подготовить промпт",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [750, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ВСТАВЬТЕ_ВАШ_OPENAI_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({model: 'gpt-4o', max_tokens: 2000, messages: [{role: 'user', content: $json.prompt}]}) }}"
+      },
+      "id": "http-openai",
+      "name": "OpenAI GPT",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1000, 0]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const response = $input.item.json;\nconst text = response.choices[0].message.content;\nconst sourceUrl = $('Подготовить промпт').item.json.sourceUrl;\n\nlet title, content;\ntry {\n  const jsonMatch = text.match(/\\{[\\s\\S]*\\}/);\n  const parsed = JSON.parse(jsonMatch[0]);\n  title = parsed.title;\n  content = parsed.content;\n} catch (e) {\n  title = 'Юридический комментарий';\n  content = text;\n}\n\nreturn {\n  json: {\n    title_ru: title,\n    content_ru: content,\n    source_url: sourceUrl,\n    status: 'pending',\n    date: new Date().toISOString().split('T')[0],\n    post_id: ''\n  }\n};"
+      },
+      "id": "code-parse",
+      "name": "Обработать ответ",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 0]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1E0sUIioBrDfRdCim9Lvu2yAkYtKX-y0lyot6uqC-W1w",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "list",
+          "cachedResultName": "Sheet1"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData"
+        },
+        "options": {}
+      },
+      "id": "sheets-append",
+      "name": "Добавить в таблицу",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1500, 0]
+    }
+  ],
+  "connections": {
+    "Каждый день в 9:00": {
+      "main": [
+        [
+          {
+            "node": "Zakon.kz RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zakon.kz RSS": {
+      "main": [
+        [
+          {
+            "node": "Топ 3 новости",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Топ 3 новости": {
+      "main": [
+        [
+          {
+            "node": "Подготовить промпт",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Подготовить промпт": {
+      "main": [
+        [
+          {
+            "node": "OpenAI GPT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI GPT": {
+      "main": [
+        [
+          {
+            "node": "Обработать ответ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Обработать ответ": {
+      "main": [
+        [
+          {
+            "node": "Добавить в таблицу",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [],
+  "pinData": {}
+}
