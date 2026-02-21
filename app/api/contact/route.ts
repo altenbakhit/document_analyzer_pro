@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { notifyAdmin, contactNotificationEmail } from "@/lib/notify";
 
 const prisma = new PrismaClient();
 
@@ -25,22 +26,16 @@ export async function POST(request: Request) {
       },
     });
 
-    // Send email notification (non-blocking, won't affect response)
-    try {
-      const { notifyAdmin, contactNotificationEmail } = await import("@/lib/notify");
-      const { subject, html } = contactNotificationEmail({
-        name: name.trim(),
-        phone: phone.trim(),
-        email: email?.trim() || null,
-        message: message.trim(),
-      });
-      notifyAdmin(subject, html).catch((e) => console.error("Email send error:", e));
-    } catch (emailErr) {
-      console.error("Email module error:", emailErr);
-    }
+    const { subject, html } = contactNotificationEmail({
+      name: name.trim(),
+      phone: phone.trim(),
+      email: email?.trim() || null,
+      message: message.trim(),
+    });
+    await notifyAdmin(subject, html);
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Contact form error:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
