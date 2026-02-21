@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
   try {
@@ -13,18 +15,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Privacy agreement required" }, { status: 400 });
     }
 
-    const { error } = await supabase.from("contact_submissions").insert({
-      name: name.trim(),
-      phone: phone.trim(),
-      email: email?.trim() || null,
-      message: message.trim(),
-      privacy_agreement,
+    await prisma.contactSubmission.create({
+      data: {
+        name: name.trim(),
+        phone: phone.trim(),
+        email: email?.trim() || null,
+        message: message.trim(),
+        privacyAgreement: privacy_agreement,
+      },
     });
-
-    if (error) {
-      console.error("Supabase contact insert error:", error);
-      return NextResponse.json({ error: "Failed to save" }, { status: 500 });
-    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

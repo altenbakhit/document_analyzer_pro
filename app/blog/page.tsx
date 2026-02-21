@@ -6,21 +6,20 @@ import { LegalFooter } from "@/components/legal/footer";
 import { Card } from "@/components/ui/card";
 import { Calendar, User } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/language-context";
-import { supabase } from "@/lib/supabase";
 
 interface BlogPost {
   id: string;
-  title_kk: string | null;
-  title_ru: string | null;
-  title_en: string | null;
-  title_zh: string | null;
-  content_kk: string | null;
-  content_ru: string | null;
-  content_en: string | null;
-  content_zh: string | null;
+  titleKk: string | null;
+  titleRu: string | null;
+  titleEn: string | null;
+  titleZh: string | null;
+  contentKk: string | null;
+  contentRu: string | null;
+  contentEn: string | null;
+  contentZh: string | null;
   author: string | null;
-  image_url: string | null;
-  created_at: string;
+  imageUrl: string | null;
+  createdAt: string;
 }
 
 export default function BlogPage() {
@@ -30,12 +29,13 @@ export default function BlogPage() {
 
   useEffect(() => {
     async function fetchPosts() {
-      const { data } = await supabase
-        .from("blog_posts")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (data) setPosts(data);
+      try {
+        const res = await fetch("/api/blog");
+        const data = await res.json();
+        if (Array.isArray(data)) setPosts(data);
+      } catch (err) {
+        console.error("Failed to fetch posts:", err);
+      }
       setLoading(false);
     }
     fetchPosts();
@@ -43,22 +43,22 @@ export default function BlogPage() {
 
   const getTitle = (post: BlogPost) => {
     const map: Record<string, string | null> = {
-      kk: post.title_kk,
-      ru: post.title_ru,
-      en: post.title_en,
-      zh: post.title_zh,
+      kk: post.titleKk,
+      ru: post.titleRu,
+      en: post.titleEn,
+      zh: post.titleZh,
     };
-    return map[lang] || post.title_ru || post.title_en || "";
+    return map[lang] || post.titleRu || post.titleEn || "";
   };
 
   const getContent = (post: BlogPost) => {
     const map: Record<string, string | null> = {
-      kk: post.content_kk,
-      ru: post.content_ru,
-      en: post.content_en,
-      zh: post.content_zh,
+      kk: post.contentKk,
+      ru: post.contentRu,
+      en: post.contentEn,
+      zh: post.contentZh,
     };
-    const content = map[lang] || post.content_ru || post.content_en || "";
+    const content = map[lang] || post.contentRu || post.contentEn || "";
     return content.length > 200 ? content.slice(0, 200) + "..." : content;
   };
 
@@ -89,9 +89,9 @@ export default function BlogPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {posts.map((post) => (
               <Card key={post.id} className="overflow-hidden hover:shadow-lg transition-all duration-300">
-                {post.image_url && (
+                {post.imageUrl && (
                   <img
-                    src={post.image_url}
+                    src={post.imageUrl}
                     alt={getTitle(post)}
                     className="w-full h-48 object-cover"
                   />
@@ -107,7 +107,7 @@ export default function BlogPage() {
                     <div className="flex items-center space-x-1">
                       <Calendar className="h-3 w-3" />
                       <span>
-                        {new Date(post.created_at).toLocaleDateString(
+                        {new Date(post.createdAt).toLocaleDateString(
                           lang === "kk" ? "kk-KZ" : lang === "zh" ? "zh-CN" : lang === "ru" ? "ru-RU" : "en-US",
                           { day: "numeric", month: "long", year: "numeric" }
                         )}

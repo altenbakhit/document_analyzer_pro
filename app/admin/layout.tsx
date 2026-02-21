@@ -12,12 +12,18 @@ import {
   ArrowLeft,
   Shield,
   CreditCard,
+  FileText,
+  BookOpen,
+  MessageSquare,
 } from "lucide-react";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/payments", label: "Payments", icon: CreditCard },
+  { href: "/admin/blog", label: "Blog", icon: BookOpen },
+  { href: "/admin/templates", label: "Templates", icon: FileText },
+  { href: "/admin/contacts", label: "Contacts", icon: MessageSquare },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];

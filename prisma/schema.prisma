@@ -116,8 +116,51 @@ model ContractAnalysis {
   riskLevel         String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@index([userId])
+}
+
+model BlogPost {
+  id        String   @id @default(cuid())
+  titleKk   String?
+  titleRu   String?
+  titleEn   String?
+  titleZh   String?
+  contentKk String?  @db.Text
+  contentRu String?  @db.Text
+  contentEn String?  @db.Text
+  contentZh String?  @db.Text
+  author    String?
+  imageUrl  String?
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TemplateDocument {
+  id            String   @id @default(cuid())
+  titleKk       String?
+  titleRu       String?
+  titleEn       String?
+  titleZh       String?
+  descriptionKk String?
+  descriptionRu String?
+  descriptionEn String?
+  descriptionZh String?
+  fileUrl       String?
+  category      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ContactSubmission {
+  id               String   @id @default(cuid())
+  name             String
+  phone            String
+  email            String?
+  message          String   @db.Text
+  privacyAgreement Boolean  @default(true)
+  createdAt        DateTime @default(now())
 }

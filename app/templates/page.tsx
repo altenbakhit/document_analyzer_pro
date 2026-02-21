@@ -7,21 +7,20 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, Download } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/language-context";
-import { supabase } from "@/lib/supabase";
 
 interface Template {
   id: string;
-  title_kk: string | null;
-  title_ru: string | null;
-  title_en: string | null;
-  title_zh: string | null;
-  description_kk: string | null;
-  description_ru: string | null;
-  description_en: string | null;
-  description_zh: string | null;
-  file_url: string | null;
+  titleKk: string | null;
+  titleRu: string | null;
+  titleEn: string | null;
+  titleZh: string | null;
+  descriptionKk: string | null;
+  descriptionRu: string | null;
+  descriptionEn: string | null;
+  descriptionZh: string | null;
+  fileUrl: string | null;
   category: string | null;
-  created_at: string;
+  createdAt: string;
 }
 
 export default function TemplatesPage() {
@@ -31,12 +30,13 @@ export default function TemplatesPage() {
 
   useEffect(() => {
     async function fetchTemplates() {
-      const { data } = await supabase
-        .from("template_documents")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (data) setTemplates(data);
+      try {
+        const res = await fetch("/api/templates");
+        const data = await res.json();
+        if (Array.isArray(data)) setTemplates(data);
+      } catch (err) {
+        console.error("Failed to fetch templates:", err);
+      }
       setLoading(false);
     }
     fetchTemplates();
@@ -44,22 +44,22 @@ export default function TemplatesPage() {
 
   const getTitle = (tpl: Template) => {
     const map: Record<string, string | null> = {
-      kk: tpl.title_kk,
-      ru: tpl.title_ru,
-      en: tpl.title_en,
-      zh: tpl.title_zh,
+      kk: tpl.titleKk,
+      ru: tpl.titleRu,
+      en: tpl.titleEn,
+      zh: tpl.titleZh,
     };
-    return map[lang] || tpl.title_ru || tpl.title_en || "";
+    return map[lang] || tpl.titleRu || tpl.titleEn || "";
   };
 
   const getDescription = (tpl: Template) => {
     const map: Record<string, string | null> = {
-      kk: tpl.description_kk,
-      ru: tpl.description_ru,
-      en: tpl.description_en,
-      zh: tpl.description_zh,
+      kk: tpl.descriptionKk,
+      ru: tpl.descriptionRu,
+      en: tpl.descriptionEn,
+      zh: tpl.descriptionZh,
     };
-    return map[lang] || tpl.description_ru || tpl.description_en || "";
+    return map[lang] || tpl.descriptionRu || tpl.descriptionEn || "";
   };
 
   return (
@@ -107,9 +107,9 @@ export default function TemplatesPage() {
                     )}
                   </div>
                 </div>
-                {tpl.file_url && (
+                {tpl.fileUrl && (
                   <div className="mt-4">
-                    <a href={tpl.file_url} target="_blank" rel="noopener noreferrer">
+                    <a href={tpl.fileUrl} target="_blank" rel="noopener noreferrer">
                       <Button variant="outline" size="sm" className="w-full">
                         <Download className="h-4 w-4 mr-2" />
                         {t("legalTemplates.download")}
