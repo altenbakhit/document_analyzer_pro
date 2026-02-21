@@ -55,10 +55,10 @@ export default function PricelistPage() {
                     {category.services.map((service, sIdx) => (
                       <div
                         key={sIdx}
-                        className="flex justify-between items-start py-2 border-b border-gray-100 last:border-0"
+                        className="flex justify-between items-start gap-2 py-2 border-b border-gray-100 last:border-0"
                       >
-                        <span className="text-sm text-gray-700 pr-4">{service.name}</span>
-                        <span className="text-sm font-semibold text-gray-900 whitespace-nowrap">
+                        <span className="text-sm text-gray-700 flex-1 min-w-0">{service.name}</span>
+                        <span className="text-sm font-semibold text-gray-900 text-right max-w-[48%] leading-snug">
                           {service.price} {t("pricelist.currency")}
                         </span>
                       </div>
