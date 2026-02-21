@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { notifyAdmin, contactNotificationEmail } from "@/lib/notify";
 
 const prisma = new PrismaClient();
 
@@ -24,6 +25,14 @@ export async function POST(request: Request) {
         privacyAgreement: privacy_agreement,
       },
     });
+
+    const { subject, html } = contactNotificationEmail({
+      name: name.trim(),
+      phone: phone.trim(),
+      email: email?.trim() || null,
+      message: message.trim(),
+    });
+    notifyAdmin(subject, html);
 
     return NextResponse.json({ success: true });
   } catch (error) {

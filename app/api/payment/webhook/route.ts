@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import Stripe from "stripe";
+import { notifyAdmin, paymentNotificationEmail } from "@/lib/notify";
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY || "", {
@@ -61,6 +62,15 @@ export async function POST(request: Request) {
           endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
         },
       });
+
+      const { subject, html } = paymentNotificationEmail({
+        userName: session.customer_details?.name || "Unknown",
+        userEmail: session.customer_details?.email || "",
+        plan,
+        amount: (session.amount_total || 0) / 100,
+        method: "Stripe",
+      });
+      notifyAdmin(subject, html);
     }
   }
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { PrismaClient } from "@prisma/client";
+import { notifyAdmin, paymentNotificationEmail } from "@/lib/notify";
 
 const prisma = new PrismaClient();
 
@@ -34,6 +35,15 @@ export async function POST(request: Request) {
         endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       },
     });
+
+    const { subject, html } = paymentNotificationEmail({
+      userName: session.user.name || "Unknown",
+      userEmail: session.user.email || "",
+      plan,
+      amount: PLAN_PRICES[plan],
+      method: "Kaspi QR",
+    });
+    notifyAdmin(subject, html);
 
     return NextResponse.json({ subscriptionId: subscription.id });
   } catch (error) {
