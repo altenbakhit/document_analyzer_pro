@@ -5,7 +5,8 @@ import { Phone, Mail, MapPin, MessageCircle } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/language-context";
 
 export function LegalFooter() {
-  const { t } = useLanguage();
+  const { t, tRaw } = useLanguage();
+  const servicesList: { title: string }[] = tRaw("services.list") || [];
 
   return (
     <footer className="bg-slate-900 text-white py-16">
@@ -59,26 +60,13 @@ export function LegalFooter() {
               {t("footer.servicesTitle")}
             </h4>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li>
-                <Link href="/service/0" className="hover:text-white transition-colors">
-                  {t("services.civil.title")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/service/1" className="hover:text-white transition-colors">
-                  {t("services.corporate.title")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/service/3" className="hover:text-white transition-colors">
-                  {t("services.criminal.title")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/service/5" className="hover:text-white transition-colors">
-                  {t("services.labor.title")}
-                </Link>
-              </li>
+              {servicesList.slice(0, 4).map((service, index) => (
+                <li key={index}>
+                  <Link href={`/service/${index}`} className="hover:text-white transition-colors">
+                    {service.title}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
