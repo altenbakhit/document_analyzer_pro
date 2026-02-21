@@ -79,6 +79,32 @@ export const legalTranslations: Record<LangKey, Record<string, any>> = {
       emailLabel: 'Email', invalidEmail: 'Неверный email',
       message: 'Описание вопроса', messageRequired: 'Сообщение обязательно', messagePlaceholder: 'Опишите вашу ситуацию подробно...',
       privacyAgreement: 'Согласен с обработкой персональных данных и ', privacyLink: 'политикой конфиденциальности', privacyRequired: 'Необходимо согласие',
+      privacyTitle: 'Политика конфиденциальности',
+      privacyText: `Настоящая Политика конфиденциальности определяет порядок сбора, хранения, обработки и использования персональных данных пользователей сайта alten.kz (далее — «Сайт»), принадлежащего Alten Consulting (далее — «Компания»).
+
+1. СБОР ПЕРСОНАЛЬНЫХ ДАННЫХ
+Компания собирает следующие данные: имя, номер телефона, адрес электронной почты, текст обращения. Данные предоставляются пользователем добровольно при заполнении форм на Сайте.
+
+2. ЦЕЛИ ОБРАБОТКИ
+Персональные данные обрабатываются в целях: обработки заявок и обращений пользователей; связи с пользователем для предоставления консультации; улучшения качества обслуживания; выполнения договорных обязательств.
+
+3. ХРАНЕНИЕ И ЗАЩИТА
+Компания принимает необходимые организационные и технические меры для защиты персональных данных от несанкционированного доступа, изменения, раскрытия или уничтожения. Данные хранятся на защищённых серверах.
+
+4. ПЕРЕДАЧА ТРЕТЬИМ ЛИЦАМ
+Компания не передаёт персональные данные третьим лицам, за исключением случаев, предусмотренных законодательством Республики Казахстан.
+
+5. ПРАВА ПОЛЬЗОВАТЕЛЯ
+Пользователь имеет право: запросить информацию о хранящихся персональных данных; потребовать исправления или удаления своих данных; отозвать согласие на обработку данных.
+
+6. СРОК ХРАНЕНИЯ
+Персональные данные хранятся в течение срока, необходимого для достижения целей обработки, но не более 3 (трёх) лет с момента последнего обращения.
+
+7. КОНТАКТЫ
+По вопросам обработки персональных данных: ten_bakhit@mail.ru, +7 707 533 37 33.
+
+Настоящая Политика действует с момента публикации на Сайте и может быть изменена Компанией в одностороннем порядке.`,
+      privacyClose: 'Закрыть',
       submit: 'Отправить заявку', submitting: 'Отправка...',
       successTitle: 'Заявка отправлена!', successDescription: 'Мы свяжемся с вами в ближайшее время.',
       errorTitle: 'Ошибка отправки', errorDescription: 'Попробуйте позже или свяжитесь по телефону.',
@@ -123,6 +149,32 @@ export const legalTranslations: Record<LangKey, Record<string, any>> = {
       emailLabel: 'Email', invalidEmail: 'Invalid email',
       message: 'Description of the issue', messageRequired: 'Message is required', messagePlaceholder: 'Describe your situation in detail...',
       privacyAgreement: 'I agree to the processing of personal data and ', privacyLink: 'privacy policy', privacyRequired: 'Consent required',
+      privacyTitle: 'Privacy Policy',
+      privacyText: `This Privacy Policy defines the procedure for collecting, storing, processing and using personal data of users of the website alten.kz (hereinafter — "Website"), owned by Alten Consulting (hereinafter — "Company").
+
+1. COLLECTION OF PERSONAL DATA
+The Company collects the following data: name, phone number, email address, message text. Data is provided voluntarily by the user when filling out forms on the Website.
+
+2. PURPOSES OF PROCESSING
+Personal data is processed for: processing user requests and inquiries; contacting the user to provide consultation; improving service quality; fulfilling contractual obligations.
+
+3. STORAGE AND PROTECTION
+The Company takes necessary organizational and technical measures to protect personal data from unauthorized access, modification, disclosure or destruction. Data is stored on secure servers.
+
+4. TRANSFER TO THIRD PARTIES
+The Company does not transfer personal data to third parties, except as provided by the legislation of the Republic of Kazakhstan.
+
+5. USER RIGHTS
+The user has the right to: request information about stored personal data; demand correction or deletion of their data; withdraw consent to data processing.
+
+6. RETENTION PERIOD
+Personal data is stored for the period necessary to achieve processing purposes, but no more than 3 (three) years from the date of the last request.
+
+7. CONTACTS
+For personal data processing inquiries: ten_bakhit@mail.ru, +7 707 533 37 33.
+
+This Policy is effective from the date of publication on the Website and may be changed by the Company unilaterally.`,
+      privacyClose: 'Close',
       submit: 'Submit request', submitting: 'Sending...',
       successTitle: 'Request submitted!', successDescription: 'We will contact you shortly.',
       errorTitle: 'Submission error', errorDescription: 'Please try later or contact us by phone.',
@@ -167,6 +219,9 @@ export const legalTranslations: Record<LangKey, Record<string, any>> = {
       emailLabel: 'Email', invalidEmail: 'Қате email',
       message: 'Сұрақ сипаттамасы', messageRequired: 'Хабарлама міндетті', messagePlaceholder: 'Жағдайыңызды толық сипаттаңыз...',
       privacyAgreement: 'Жеке деректерді өңдеуге және ', privacyLink: 'құпиялылық саясатымен келісемін', privacyRequired: 'Келісім қажет',
+      privacyTitle: 'Құпиялылық саясаты',
+      privacyText: 'Осы Құпиялылық саясаты alten.kz сайтының (бұдан әрі — «Сайт») пайдаланушыларының жеке деректерін жинау, сақтау, өңдеу және пайдалану тәртібін анықтайды.\n\n1. ЖЕКЕ ДЕРЕКТЕРДІ ЖИНАУ\nКомпания келесі деректерді жинайды: аты, телефон нөмірі, электрондық пошта мекенжайы, хабарлама мәтіні.\n\n2. ӨҢДЕУ МАҚСАТТАРЫ\nПайдаланушылардың өтініштері мен сұрауларын өңдеу; кеңес беру үшін пайдаланушымен байланысу; қызмет сапасын жақсарту.\n\n3. САҚТАУ ЖӘНЕ ҚОРҒАУ\nКомпания жеке деректерді рұқсатсыз қол жеткізуден, өзгертуден, ашудан немесе жоюдан қорғау үшін қажетті шараларды қабылдайды.\n\n4. ҮШІНШІ ТҰЛҒАЛАРҒА БЕРУ\nКомпания жеке деректерді Қазақстан Республикасының заңнамасында көзделген жағдайлардан басқа, үшінші тұлғаларға бермейді.\n\n5. ПАЙДАЛАНУШЫ ҚҰҚЫҚТАРЫ\nПайдаланушы өз деректерін сұрауға, түзетуге немесе жоюға құқылы.\n\n6. БАЙЛАНЫС\nten_bakhit@mail.ru, +7 707 533 37 33.',
+      privacyClose: 'Жабу',
       submit: 'Өтінім жіберу', submitting: 'Жіберілуде...',
       successTitle: 'Өтінім жіберілді!', successDescription: 'Жақын арада сізбен хабарласамыз.',
       errorTitle: 'Жіберу қатесі', errorDescription: 'Кейінірек қайталап көріңіз.',
@@ -211,6 +266,9 @@ export const legalTranslations: Record<LangKey, Record<string, any>> = {
       emailLabel: '电子邮件', invalidEmail: '无效的电子邮件',
       message: '问题描述', messageRequired: '消息为必填项', messagePlaceholder: '详细描述您的情况...',
       privacyAgreement: '我同意处理个人数据和', privacyLink: '隐私政策', privacyRequired: '需要同意',
+      privacyTitle: '隐私政策',
+      privacyText: '本隐私政策规定了alten.kz网站用户个人数据的收集、存储、处理和使用程序。\n\n1. 个人数据收集\n公司收集以下数据：姓名、电话号码、电子邮件地址、消息内容。\n\n2. 处理目的\n处理用户请求和咨询；联系用户提供咨询；提高服务质量。\n\n3. 存储和保护\n公司采取必要的组织和技术措施保护个人数据免受未经授权的访问。\n\n4. 向第三方转让\n除哈萨克斯坦共和国法律规定的情况外，公司不会将个人数据转让给第三方。\n\n5. 用户权利\n用户有权请求、更正或删除其数据。\n\n6. 联系方式\nten_bakhit@mail.ru, +7 707 533 37 33.',
+      privacyClose: '关闭',
       submit: '提交申请', submitting: '发送中...',
       successTitle: '申请已提交！', successDescription: '我们会尽快与您联系。',
       errorTitle: '提交错误', errorDescription: '请稍后重试。',

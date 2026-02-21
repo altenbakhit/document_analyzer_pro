@@ -14,6 +14,7 @@ import {
   MessageCircle,
   Send,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { toast } from "sonner";
 
@@ -24,6 +25,7 @@ export function LegalContact() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [privacy, setPrivacy] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const { t } = useLanguage();
 
   const formatPhone = (value: string) => {
@@ -263,14 +265,13 @@ export function LegalContact() {
                 />
                 <label htmlFor="privacy" className="text-sm text-gray-600 cursor-pointer">
                   {t("contact.privacyAgreement")}{" "}
-                  <a
-                    href="https://docs.google.com/document/d/e/2PACX-1vST-Re0uM-KbrfSjnzHpXDOQzGBFtvXjiiCuWlubA4WAd0sgab80tCXll_vinkC1V6e-3_3FHOH-mgk/pub"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); setShowPrivacyModal(true); }}
                     className="text-blue-600 hover:underline"
                   >
                     {t("contact.privacyLink")}
-                  </a>{" "}
+                  </button>{" "}
                   *
                 </label>
               </div>
@@ -294,6 +295,42 @@ export function LegalContact() {
           </Card>
         </div>
       </div>
+
+      {/* Privacy Policy Modal */}
+      {showPrivacyModal && (
+        <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4" onClick={() => setShowPrivacyModal(false)}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-gray-900">{t("contact.privacyTitle")}</h3>
+              <button
+                onClick={() => setShowPrivacyModal(false)}
+                className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto flex-1">
+              <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-line">
+                {t("contact.privacyText")}
+              </div>
+            </div>
+            <div className="p-4 border-t border-gray-200">
+              <Button
+                onClick={() => setShowPrivacyModal(false)}
+                variant="outline"
+                className="w-full"
+              >
+                {t("contact.privacyClose")}
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </section>
   );
 }
