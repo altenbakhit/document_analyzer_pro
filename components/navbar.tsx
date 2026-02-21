@@ -34,7 +34,7 @@ export function Navbar() {
     { href: "/blog", label: t("legalNav.blog") },
     { href: "/templates", label: t("legalNav.templates") },
     { href: "/analyzer", label: t("legalNav.analyzer") },
-    { href: "/pricing", label: t("nav.pricing") },
+    { href: "/pricelist", label: t("nav.pricelist") },
   ];
 
   return (

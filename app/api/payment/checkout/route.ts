@@ -52,8 +52,8 @@ export async function POST(request: Request) {
         plan: plan,
       },
       customer_email: session.user.email || undefined,
-      success_url: `${origin}/pricing?success=true&plan=${plan}`,
-      cancel_url: `${origin}/pricing?canceled=true`,
+      success_url: `${origin}/analyzer/plans?success=true&plan=${plan}`,
+      cancel_url: `${origin}/analyzer/plans?canceled=true`,
     });
 
     return NextResponse.json({ url: checkoutSession.url });

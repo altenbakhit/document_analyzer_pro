@@ -51,6 +51,11 @@ export function LegalFooter() {
                   {t("footer.analyzer")}
                 </Link>
               </li>
+              <li>
+                <Link href="/pricelist" className="hover:text-white transition-colors">
+                  {t("footer.pricelist")}
+                </Link>
+              </li>
             </ul>
           </div>
 

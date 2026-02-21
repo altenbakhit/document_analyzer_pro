@@ -142,7 +142,7 @@ export default function DashboardPage() {
                   </div>
                 )}
                 {(analyses.plan === "free" || analyses.plan === "basic") && (
-                  <Link href="/pricing">
+                  <Link href="/analyzer/plans">
                     <Button size="sm" className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 whitespace-nowrap">
                       {t("dashboard.upgradePlan")}
                     </Button>

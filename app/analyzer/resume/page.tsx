@@ -167,7 +167,7 @@ export default function ResumeEvaluatorPage() {
             <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg mb-6">
               <p>{error}</p>
               {error.includes("upgrade") && (
-                <Link href="/pricing" className="inline-block mt-2">
+                <Link href="/analyzer/plans" className="inline-block mt-2">
                   <Button size="sm" className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600">
                     {t("resume.viewPlans")}
                   </Button>
