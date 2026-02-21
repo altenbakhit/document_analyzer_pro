@@ -16,7 +16,7 @@ export function LegalHero() {
         <img
           src="/hero-asian-lawyer1.jpeg"
           alt="Alten Consulting"
-          className="w-full h-full object-cover object-top"
+          className="w-full h-full object-cover object-[center_20%]"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-slate-900/40" />
       </div>
