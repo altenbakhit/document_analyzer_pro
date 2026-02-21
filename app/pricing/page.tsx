@@ -6,7 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/navbar";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Check, X, Zap, Star, Crown, Rocket, CreditCard, QrCode, CheckCircle2, XCircle } from "lucide-react";
+import { Check, X, Zap, Star, Crown, Rocket, CreditCard, QrCode, CheckCircle2, XCircle, FileText } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useLanguage } from "@/lib/i18n/language-context";
 
 export default function PricingPage() {
@@ -18,6 +19,9 @@ export default function PricingPage() {
 
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showOfferStep, setShowOfferStep] = useState(false);
+  const [offerAccepted, setOfferAccepted] = useState(false);
+  const [showFullOffer, setShowFullOffer] = useState(false);
   const [showKaspiModal, setShowKaspiModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [kaspiSent, setKaspiSent] = useState(false);
@@ -72,26 +76,33 @@ export default function PricingPage() {
     setLoading(false);
   };
 
-  const handleKaspiPayment = async () => {
-    if (!selectedPlan) return;
+  const handleKaspiPayment = () => {
+    setShowPaymentModal(false);
+    setOfferAccepted(false);
+    setShowFullOffer(false);
+    setShowOfferStep(true);
+  };
+
+  const handleOfferAcceptAndPay = async () => {
+    if (!selectedPlan || !offerAccepted) return;
     setLoading(true);
     try {
       const res = await fetch("/api/payment/kaspi-request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: selectedPlan }),
+        body: JSON.stringify({ plan: selectedPlan, offerAccepted: true }),
       });
       const data = await res.json();
       if (data.subscriptionId) {
-        setShowPaymentModal(false);
+        setShowOfferStep(false);
         setShowKaspiModal(true);
       } else {
         setErrorMessage(data.error || "Payment error");
-        setShowPaymentModal(false);
+        setShowOfferStep(false);
       }
     } catch {
       setErrorMessage("Payment error");
-      setShowPaymentModal(false);
+      setShowOfferStep(false);
     }
     setLoading(false);
   };
@@ -366,6 +377,106 @@ export default function PricingPage() {
               {t("payment.cancel")}
             </button>
           </motion.div>
+        </div>
+      )}
+
+      {/* Offer Acceptance Step */}
+      {showOfferStep && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="bg-blue-100 p-2 rounded-lg">
+                <FileText className="h-5 w-5 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">{t("offer.title")}</h3>
+            </div>
+
+            <p className="text-sm text-gray-600 mb-4">{t("offer.summary")}</p>
+
+            <div className="bg-gray-50 rounded-lg p-4 space-y-2 mb-4 text-sm text-gray-700">
+              <p>1. {t("offer.point1")}</p>
+              <p>2. {t("offer.point2")}</p>
+              <p>3. {t("offer.point3")}</p>
+              <p>4. {t("offer.point4")}</p>
+              <p>5. {t("offer.point5")}</p>
+            </div>
+
+            <button
+              onClick={() => setShowFullOffer(true)}
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline mb-6 block"
+            >
+              {t("offer.readFull")} &rarr;
+            </button>
+
+            <div className="flex items-start space-x-3 mb-6">
+              <Checkbox
+                id="offer-accept"
+                checked={offerAccepted}
+                onCheckedChange={(checked) => setOfferAccepted(checked as boolean)}
+                className="mt-0.5"
+              />
+              <label htmlFor="offer-accept" className="text-sm text-gray-800 cursor-pointer leading-tight">
+                {t("offer.agree")}
+              </label>
+            </div>
+
+            <Button
+              onClick={handleOfferAcceptAndPay}
+              disabled={!offerAccepted || loading}
+              className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 disabled:opacity-50"
+            >
+              {loading ? "..." : t("offer.proceed")}
+            </Button>
+
+            <button
+              onClick={() => { setShowOfferStep(false); setShowPaymentModal(true); }}
+              disabled={loading}
+              className="mt-4 w-full text-center text-gray-500 hover:text-gray-700 text-sm"
+            >
+              {t("payment.cancel")}
+            </button>
+          </motion.div>
+
+          {/* Full Offer Overlay */}
+          {showFullOffer && (
+            <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4" onClick={() => setShowFullOffer(false)}>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-gray-900">{t("offer.fullTitle")}</h3>
+                  <button
+                    onClick={() => setShowFullOffer(false)}
+                    className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+                  >
+                    &times;
+                  </button>
+                </div>
+                <div className="p-6 overflow-y-auto flex-1">
+                  <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-line">
+                    {t("offer.fullText")}
+                  </div>
+                </div>
+                <div className="p-4 border-t border-gray-200">
+                  <Button
+                    onClick={() => setShowFullOffer(false)}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    {t("offer.close")}
+                  </Button>
+                </div>
+              </motion.div>
+            </div>
+          )}
         </div>
       )}
 

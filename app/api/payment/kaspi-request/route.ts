@@ -18,13 +18,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { plan } = await request.json();
+    const { plan, offerAccepted } = await request.json();
 
     if (!plan || !PLAN_PRICES[plan]) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
-    // Create pending subscription
+    if (!offerAccepted) {
+      return NextResponse.json({ error: "Offer must be accepted" }, { status: 400 });
+    }
+
+    // Create pending subscription with offer acceptance record
     const subscription = await prisma.subscription.create({
       data: {
         userId: session.user.id,
@@ -33,6 +37,8 @@ export async function POST(request: Request) {
         paymentMethod: "kaspi",
         amount: PLAN_PRICES[plan],
         endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        offerAccepted: true,
+        offerAcceptedAt: new Date(),
       },
     });
 
