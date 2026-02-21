@@ -14,7 +14,7 @@ export function LegalHero() {
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <img
-          src="/hero-asian-lawyer1.jpeg"
+          src="/hero-asian-lawyer.jpg"
           alt="Alten Consulting"
           className="w-full h-full object-cover object-[center_20%]"
         />
