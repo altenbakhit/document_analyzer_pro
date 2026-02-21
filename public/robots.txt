@@ -6,4 +6,4 @@ Disallow: /api
 Disallow: /analyzer
 Disallow: /dashboard
 
-Sitemap: https://altenconsulting.vercel.app/sitemap.xml
+Sitemap: https://alten.kz/sitemap.xml

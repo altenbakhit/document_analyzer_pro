@@ -25,7 +25,16 @@ export const metadata: Metadata = {
     siteName: "Alten Consulting",
     title: "Alten Consulting — Юридические услуги в Алматы",
     description: "Опытные юристы в Алматы. Полный спектр юридических услуг для физических лиц и бизнеса. 500+ успешных дел.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Alten Consulting — Юридические услуги" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Alten Consulting — Юридические услуги в Алматы",
+    description: "Опытные юристы в Алматы. 500+ успешных дел, 15+ лет опыта.",
     images: ["/og-image.png"],
+  },
+  alternates: {
+    canonical: "https://alten.kz",
   },
 };
 
@@ -37,7 +46,7 @@ export default function RootLayout({
   return (
     <html lang="ru" suppressHydrationWarning>
       <head>
-        <script src="https://apps.abacus.ai/chatllm/appllm-lib.js"></script>
+        <script async src="https://apps.abacus.ai/chatllm/appllm-lib.js"></script>
       </head>
       <body className={inter.className}>
         <Providers>{children}</Providers>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import { LegalFooter } from "@/components/legal/footer";
 import { Card } from "@/components/ui/card";
@@ -88,40 +89,42 @@ export default function BlogPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {posts.map((post) => (
-              <Card key={post.id} className="overflow-hidden hover:shadow-lg transition-all duration-300">
-                {post.imageUrl && (
-                  <img
-                    src={post.imageUrl}
-                    alt={getTitle(post)}
-                    className="w-full h-48 object-cover"
-                  />
-                )}
-                <div className="p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                    {getTitle(post)}
-                  </h2>
-                  <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                    {getContent(post)}
-                  </p>
-                  <div className="flex items-center justify-between text-xs text-gray-400">
-                    <div className="flex items-center space-x-1">
-                      <Calendar className="h-3 w-3" />
-                      <span>
-                        {new Date(post.createdAt).toLocaleDateString(
-                          lang === "kk" ? "kk-KZ" : lang === "zh" ? "zh-CN" : lang === "ru" ? "ru-RU" : "en-US",
-                          { day: "numeric", month: "long", year: "numeric" }
-                        )}
-                      </span>
-                    </div>
-                    {post.author && (
+              <Link key={post.id} href={`/blog/${post.id}`}>
+                <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer h-full">
+                  {post.imageUrl && (
+                    <img
+                      src={post.imageUrl}
+                      alt={getTitle(post)}
+                      className="w-full h-48 object-cover"
+                    />
+                  )}
+                  <div className="p-6">
+                    <h2 className="text-xl font-semibold text-gray-900 mb-3">
+                      {getTitle(post)}
+                    </h2>
+                    <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                      {getContent(post)}
+                    </p>
+                    <div className="flex items-center justify-between text-xs text-gray-400">
                       <div className="flex items-center space-x-1">
-                        <User className="h-3 w-3" />
-                        <span>{post.author}</span>
+                        <Calendar className="h-3 w-3" />
+                        <span>
+                          {new Date(post.createdAt).toLocaleDateString(
+                            lang === "kk" ? "kk-KZ" : lang === "zh" ? "zh-CN" : lang === "ru" ? "ru-RU" : "en-US",
+                            { day: "numeric", month: "long", year: "numeric" }
+                          )}
+                        </span>
                       </div>
-                    )}
+                      {post.author && (
+                        <div className="flex items-center space-x-1">
+                          <User className="h-3 w-3" />
+                          <span>{post.author}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
+              </Link>
             ))}
           </div>
         )}
