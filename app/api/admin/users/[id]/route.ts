@@ -75,6 +75,14 @@ export async function PATCH(
   if (isBlocked !== undefined) data.isBlocked = isBlocked;
   if (analysisCount !== undefined) data.analysisCount = analysisCount;
 
+  // If deactivating plan (setting to "free"), also expire active subscriptions
+  if (plan === "free") {
+    await prisma.subscription.updateMany({
+      where: { userId: params.id, status: "active" },
+      data: { status: "expired" },
+    });
+  }
+
   const user = await prisma.user.update({
     where: { id: params.id },
     data,

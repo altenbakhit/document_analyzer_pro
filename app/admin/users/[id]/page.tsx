@@ -12,7 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Ban, CheckCircle, FileText, Scale } from "lucide-react";
+import { ArrowLeft, Ban, CheckCircle, FileText, Scale, ShieldOff } from "lucide-react";
+import { toast } from "sonner";
 import Link from "next/link";
 
 interface UserDetail {
@@ -150,6 +151,23 @@ export default function UserDetailPage() {
                 </SelectContent>
               </Select>
             </div>
+            {user.plan !== "free" && (
+              <div className="pt-2">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="w-full text-xs"
+                  onClick={async () => {
+                    if (!confirm("Деактивировать тариф? Пользователь будет переведён на бесплатный план.")) return;
+                    await handleUpdate({ plan: "free" });
+                    toast.success("Тариф деактивирован");
+                  }}
+                >
+                  <ShieldOff className="h-3 w-3 mr-1" />
+                  Деактивировать тариф ({user.plan})
+                </Button>
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-500">Status</span>
               <Button
@@ -273,6 +291,7 @@ export default function UserDetailPage() {
                   <th className="text-left py-2 px-4 text-gray-500 font-medium">Amount</th>
                   <th className="text-left py-2 px-4 text-gray-500 font-medium">Start</th>
                   <th className="text-left py-2 px-4 text-gray-500 font-medium">End</th>
+                  <th className="text-left py-2 px-4 text-gray-500 font-medium"></th>
                 </tr>
               </thead>
               <tbody>

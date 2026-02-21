@@ -26,11 +26,43 @@ export function LegalContact() {
   const [privacy, setPrivacy] = useState(false);
   const { t } = useLanguage();
 
+  const formatPhone = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 11);
+    if (digits.length === 0) return "";
+    if (digits.length <= 1) return `+${digits}`;
+    if (digits.length <= 4) return `+${digits[0]} (${digits.slice(1)}`;
+    if (digits.length <= 7) return `+${digits[0]} (${digits.slice(1, 4)}) ${digits.slice(4)}`;
+    if (digits.length <= 9) return `+${digits[0]} (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
+    return `+${digits[0]} (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7, 9)}-${digits.slice(9, 11)}`;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPhone(formatPhone(e.target.value));
+  };
+
+  const isValidPhone = (value: string) => {
+    const digits = value.replace(/\D/g, "");
+    return digits.length === 11;
+  };
+
+  const isValidEmail = (value: string) => {
+    if (!value.trim()) return true;
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!name.trim() || !phone.trim() || !message.trim()) {
       toast.error(t("contact.errorTitle"));
+      return;
+    }
+    if (!isValidPhone(phone)) {
+      toast.error(t("contact.phoneInvalidFormat"));
+      return;
+    }
+    if (!isValidEmail(email)) {
+      toast.error(t("contact.invalidEmail"));
       return;
     }
     if (!privacy) {
@@ -190,7 +222,7 @@ export function LegalContact() {
                   </label>
                   <Input
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={handlePhoneChange}
                     placeholder="+7 (___) ___-__-__"
                     required
                   />

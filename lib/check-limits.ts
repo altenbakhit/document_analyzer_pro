@@ -25,6 +25,34 @@ export async function checkAnalysisLimit(userId: string): Promise<{ allowed: boo
     return { allowed: false, remaining: 0, error: NextResponse.json({ error: "Account is blocked" }, { status: 403 }) };
   }
 
+  // Check subscription expiry for paid plans
+  if (user.plan !== "free") {
+    const subscription = await prisma.subscription.findFirst({
+      where: { userId, status: "active" },
+      orderBy: { createdAt: "desc" },
+      select: { endDate: true },
+    });
+
+    if (subscription?.endDate && new Date(subscription.endDate) < new Date()) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { plan: "free" },
+      });
+      await prisma.subscription.updateMany({
+        where: { userId, status: "active" },
+        data: { status: "expired" },
+      });
+      return {
+        allowed: false,
+        remaining: 0,
+        error: NextResponse.json(
+          { error: "Subscription expired", message: "Ваша подписка истекла. Пожалуйста, продлите тариф." },
+          { status: 429 }
+        ),
+      };
+    }
+  }
+
   const planConfig = PLAN_LIMITS[user.plan] || PLAN_LIMITS.free;
 
   if (planConfig.limit === Infinity) {
