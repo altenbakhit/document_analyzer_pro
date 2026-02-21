@@ -2,13 +2,15 @@ import nodemailer from "nodemailer";
 
 const ADMIN_EMAIL = "bakhitzhankenzhebayev@gmail.com";
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+function getTransporter() {
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+}
 
 export async function notifyAdmin(subject: string, html: string) {
   if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
@@ -17,6 +19,7 @@ export async function notifyAdmin(subject: string, html: string) {
   }
 
   try {
+    const transporter = getTransporter();
     await transporter.sendMail({
       from: `"Alten Consulting" <${process.env.SMTP_USER}>`,
       to: ADMIN_EMAIL,
