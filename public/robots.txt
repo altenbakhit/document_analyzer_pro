@@ -1,3 +1,9 @@
-# Allow all web crawlers to access all content
+# Alten Consulting - robots.txt
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /analyzer
+Disallow: /dashboard
+
+Sitemap: https://altenconsulting.vercel.app/sitemap.xml
