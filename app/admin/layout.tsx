@@ -35,7 +35,7 @@ export default function AdminLayout({
     if (status === "unauthenticated") {
       router.push("/auth/login");
     } else if (status === "authenticated" && session?.user?.role !== "admin") {
-      router.push("/dashboard");
+      router.push("/analyzer");
     }
   }, [status, session, router]);
 
@@ -90,7 +90,7 @@ export default function AdminLayout({
 
         <div className="absolute bottom-6 left-6 right-6">
           <Link
-            href="/dashboard"
+            href="/analyzer"
             className="flex items-center space-x-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />

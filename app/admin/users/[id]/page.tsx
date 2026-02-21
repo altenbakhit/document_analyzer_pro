@@ -192,7 +192,7 @@ export default function UserDetailPage() {
                 {user.resumeAnalyses.map((a) => (
                   <Link
                     key={a.id}
-                    href={`/resume-evaluator/results/${a.id}`}
+                    href={`/analyzer/resume/results/${a.id}`}
                     className="block p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors"
                   >
                     <p className="font-medium text-sm text-gray-900">{a.targetJobTitle}</p>
@@ -234,7 +234,7 @@ export default function UserDetailPage() {
                 {user.contractAnalyses.map((a) => (
                   <Link
                     key={a.id}
-                    href={`/contract-evaluator/results/${a.id}`}
+                    href={`/analyzer/contract/results/${a.id}`}
                     className="block p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors"
                   >
                     <p className="font-medium text-sm text-gray-900">{a.clientPosition}</p>
