@@ -138,12 +138,28 @@ export default function ContractConstructorPage() {
 
   const handleSave = () => {
     if (!contractRef.current) return;
-    const text = contractRef.current.innerText ?? "";
     const title = template?.titleRu ?? "Договор";
-    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const bodyHtml = contractRef.current.innerHTML;
+    const wordHtml = `
+<html xmlns:o='urn:schemas-microsoft-com:office:office'
+      xmlns:w='urn:schemas-microsoft-com:office:word'
+      xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+  <meta charset='utf-8'>
+  <title>${title}</title>
+  <style>
+    body { font-family: Times New Roman, serif; font-size: 12pt; margin: 2cm; }
+    p { margin: 6pt 0; line-height: 1.5; }
+    strong, b { font-weight: bold; }
+    .contract-field { border-bottom: 1px solid #000; min-width: 60px; display: inline-block; }
+  </style>
+</head>
+<body>${bodyHtml}</body>
+</html>`;
+    const blob = new Blob([wordHtml], { type: "application/msword;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `${title}.txt`;
+    a.download = `${title}.doc`;
     a.click();
     URL.revokeObjectURL(a.href);
   };
@@ -217,7 +233,7 @@ export default function ContractConstructorPage() {
             className="text-green-700 border-green-300 hover:bg-green-50"
           >
             <Save className="h-4 w-4 mr-1.5" />
-            Сохранить
+            Скачать .doc
           </Button>
           <Button variant="outline" size="sm" onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-1.5" />
