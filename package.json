@@ -8,7 +8,9 @@
     "db:push": "prisma db push",
     "start": "next start",
     "lint": "next lint",
-    "import-templates": "tsx --require dotenv/config scripts/import-templates.ts"
+    "import-templates": "tsx --require dotenv/config scripts/import-templates.ts",
+    "seed-neon": "tsx scripts/seed-templates-neon.ts",
+    "export-templates": "tsx --require dotenv/config scripts/export-templates.ts"
   },
   "prisma": {
     "seed": "tsx --require dotenv/config scripts/seed.ts"
