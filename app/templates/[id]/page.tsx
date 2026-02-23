@@ -47,7 +47,6 @@ interface Rekv {
   bin: string;
   director: string;
   position: string;
-  basis: string;
   address: string;
   bank: string;
   bik: string;
@@ -57,7 +56,7 @@ interface Rekv {
 
 const emptyRekv: Rekv = {
   company: "", bin: "", director: "", position: "",
-  basis: "", address: "", bank: "", bik: "", iik: "", kbe: "",
+  address: "", bank: "", bik: "", iik: "", kbe: "",
 };
 
 // ── Render helpers ─────────────────────────────────────────────────
@@ -282,7 +281,6 @@ ${bodyHtml}
     { label: "БИН", key: "bin", placeholder: "000000000000" },
     { label: "Руководитель (ФИО)", key: "director", placeholder: "Иванов Иван Иванович" },
     { label: "Должность", key: "position", placeholder: "Директор" },
-    { label: "Действует на основании", key: "basis", placeholder: "Устава" },
     { label: "Юридический адрес", key: "address", placeholder: "г. Алматы, ул. ..." },
     { label: "Банк", key: "bank", placeholder: "АО «Халык Банк»" },
     { label: "БИК", key: "bik", placeholder: "HSBKKZKX" },
@@ -324,10 +322,12 @@ ${bodyHtml}
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
+          {!hasPrice && (
           <Button variant="outline" size="sm" onClick={handleSave} className="text-green-700 border-green-300 hover:bg-green-50">
             <Save className="h-4 w-4 mr-1.5" />
             Скачать .doc
           </Button>
+          )}
           <Button variant="outline" size="sm" onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-1.5" />
             Печать
