@@ -183,6 +183,7 @@ model TemplateDocument {
   keyTerms      String?
   contractHtml  String?  @db.Text
   questionnaire Json?
+  price         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }

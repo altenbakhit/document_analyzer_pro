@@ -26,6 +26,7 @@ interface Template {
   keyTerms: string | null;
   contractHtml: string | null;
   questionnaire: unknown;
+  price: string | null;
   createdAt: string;
 }
 
@@ -36,6 +37,7 @@ const emptyTemplate = {
   summary: "", keyTerms: "",
   contractHtml: "",
   questionnaire: "",
+  price: "",
 };
 
 // ── Docx helpers ───────────────────────────────────────────────────
@@ -168,6 +170,7 @@ export default function AdminTemplatesPage() {
       summary: tpl.summary || "", keyTerms: tpl.keyTerms || "",
       contractHtml: tpl.contractHtml || "",
       questionnaire: tpl.questionnaire ? JSON.stringify(tpl.questionnaire, null, 2) : "",
+      price: tpl.price || "",
     });
     setShowForm(true);
     setActiveTab("basic");
@@ -291,6 +294,9 @@ export default function AdminTemplatesPage() {
               <div><Label>Ключевые условия (через запятую)</Label>
                 <Input value={form.keyTerms} onChange={(e) => setForm({ ...form, keyTerms: e.target.value })}
                   placeholder="Предмет договора, Срок действия, Вознаграждение, Ответственность сторон" /></div>
+              <div><Label>Цена (отображается в конструкторе, например: 2 000 тг)</Label>
+                <Input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })}
+                  placeholder="2 000 тг" /></div>
             </div>
           )}
 
