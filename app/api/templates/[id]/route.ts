@@ -5,6 +5,17 @@ import { authOptions } from "@/lib/auth-options";
 
 const prisma = new PrismaClient();
 
+export async function GET(request: Request, { params }: { params: { id: string } }) {
+  try {
+    const template = await prisma.templateDocument.findUnique({ where: { id: params.id } });
+    if (!template) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json(template);
+  } catch (error) {
+    console.error("Template fetch error:", error);
+    return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });
+  }
+}
+
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
     const session = await getServerSession(authOptions);

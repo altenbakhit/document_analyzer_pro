@@ -79,3 +79,48 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ── Contract Constructor ── */
+.contract-field {
+  color: #1d6acd;
+  border-bottom: 1.5px dashed #1d6acd;
+  min-width: 60px;
+  display: inline-block;
+  padding: 0 3px;
+  outline: none;
+  border-radius: 2px;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.contract-field.wide {
+  min-width: 180px;
+  white-space: normal;
+}
+.contract-field:empty::before {
+  content: attr(data-ph);
+  color: #93c5fd;
+  font-style: italic;
+}
+.contract-field:focus {
+  background: #dbeafe;
+  border-bottom-color: #1e40af;
+  border-bottom-width: 2px;
+  border-radius: 3px 3px 0 0;
+}
+.contract-body p { margin-bottom: 10px; text-align: justify; }
+.contract-body .section-title {
+  font-weight: 700;
+  margin-top: 20px;
+  margin-bottom: 6px;
+}
+.contract-title {
+  text-align: center;
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 18px;
+}
+@media print {
+  .constructor-toolbar, .constructor-left { display: none !important; }
+  .contract-field { border-bottom: 1px solid #000 !important; color: #000 !important; background: none !important; }
+  .contract-field:empty::before { color: #aaa !important; }
+}
