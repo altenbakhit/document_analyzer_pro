@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, Edit2, X, Save, FileText, Eye } from "lucide-react";
+import { Plus, Trash2, Edit2, X, Save, FileText, Eye, Upload } from "lucide-react";
+import mammoth from "mammoth";
 
 interface Template {
   id: string;
@@ -36,6 +37,38 @@ const emptyTemplate = {
   contractHtml: "",
   questionnaire: "",
 };
+
+// ── Docx helpers ───────────────────────────────────────────────────
+function autoMarkFields(html: string): string {
+  let idx = 0;
+  const next = (ph: string) => `{{FIELD:field${++idx}:${ph}}}`;
+
+  // «__________» — ёлочки с подчёркиваниями
+  html = html.replace(/«_{3,}»/g, () => next("введите значение"));
+  // [____________] — скобки с подчёркиваниями
+  html = html.replace(/\[_{3,}\]/g, () => next("введите значение"));
+  // [наименование организации] — именованный плейсхолдер в скобках
+  html = html.replace(/\[([^\]]{2,60})\]/g, (_, ph) => next(ph.trim()));
+  // _____________ — просто подчёркивания (4+)
+  html = html.replace(/_{4,}/g, () => next("введите значение"));
+
+  return html;
+}
+
+async function parseDocxFile(file: File): Promise<string> {
+  const arrayBuffer = await file.arrayBuffer();
+  const result = await mammoth.convertToHtml(
+    { arrayBuffer },
+    {
+      styleMap: [
+        "p[style-name='Heading 1'] => p.section-title:fresh",
+        "p[style-name='Heading 2'] => p.section-title:fresh",
+        "b => strong",
+      ],
+    }
+  );
+  return autoMarkFields(result.value);
+}
 
 const QUESTIONNAIRE_PLACEHOLDER = `{
   "sections": [
@@ -71,6 +104,7 @@ export default function AdminTemplatesPage() {
   const [form, setForm] = useState(emptyTemplate);
   const [saving, setSaving] = useState(false);
   const [jsonError, setJsonError] = useState("");
+  const [docxLoading, setDocxLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"basic" | "constructor">("basic");
 
   const fetchTemplates = async () => {
@@ -155,6 +189,20 @@ export default function AdminTemplatesPage() {
     setForm(emptyTemplate);
     setJsonError("");
     setActiveTab("basic");
+  };
+
+  const handleDocxUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setDocxLoading(true);
+    try {
+      const html = await parseDocxFile(file);
+      setForm((prev) => ({ ...prev, contractHtml: html }));
+    } catch {
+      alert("Ошибка чтения файла. Убедитесь что файл в формате .docx");
+    }
+    setDocxLoading(false);
+    e.target.value = "";
   };
 
   return (
@@ -253,6 +301,26 @@ export default function AdminTemplatesPage() {
                 <p><code className="bg-blue-100 px-1 rounded">{"{{FIELD:id:placeholder}}"}</code> — синее заполняемое поле</p>
                 <p className="mt-1"><code className="bg-blue-100 px-1 rounded">{"{{COND:id}}"}</code> — блок, меняющийся по опроснику</p>
                 <p className="mt-1 text-blue-600">Пример: <code>Договор № {"{{FIELD:num:______}}"}</code></p>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 bg-gray-50 border border-dashed border-gray-300 rounded-lg">
+                <FileText className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-700">Загрузить Word документ (.docx)</p>
+                  <p className="text-xs text-gray-500">Поля-подчёркивания автоматически станут {`{{FIELD:...}}`}</p>
+                </div>
+                <label className="cursor-pointer">
+                  <input type="file" accept=".docx" className="hidden" onChange={handleDocxUpload} disabled={docxLoading} />
+                  <Button variant="outline" size="sm" asChild disabled={docxLoading}>
+                    <span>
+                      {docxLoading ? (
+                        <><div className="h-3 w-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mr-2 inline-block" />Обработка...</>
+                      ) : (
+                        <><Upload className="h-3 w-3 mr-2" />Выбрать файл</>
+                      )}
+                    </span>
+                  </Button>
+                </label>
               </div>
 
               <div>
