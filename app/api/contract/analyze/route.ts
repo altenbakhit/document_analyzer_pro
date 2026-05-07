@@ -3,8 +3,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { PrismaClient } from "@prisma/client";
 import { checkAnalysisLimit, incrementAnalysisCount } from "@/lib/check-limits";
+import Anthropic from "@anthropic-ai/sdk";
 
 const prisma = new PrismaClient();
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 export const dynamic = "force-dynamic";
 
@@ -30,41 +32,6 @@ export async function POST(request: Request) {
         { error: "Missing required fields" },
         { status: 400 }
       );
-    }
-
-    // Prepare messages for LLM
-    let messages: any[] = [];
-
-    if (contractContent.startsWith("PDF_BASE64:")) {
-      const base64Data = contractContent.replace("PDF_BASE64:", "");
-      messages = [
-        {
-          role: "user",
-          content: [
-            {
-              type: "file",
-              file: {
-                filename: fileName || "contract.pdf",
-                file_data: `data:application/pdf;base64,${base64Data}`,
-              },
-            },
-            {
-              type: "text",
-              text: `Analyze this contract from the perspective of a ${clientPosition}${isCrossBorder ? " in a cross-border transaction" : ""}${industryType ? ` in the ${industryType} industry` : ""} under Kazakhstan law.`,
-            },
-          ],
-        },
-      ];
-    } else {
-      messages = [
-        {
-          role: "user",
-          content: `Analyze the following contract from the perspective of a ${clientPosition}${isCrossBorder ? " in a cross-border transaction" : ""}${industryType ? ` in the ${industryType} industry` : ""} under Kazakhstan law.
-
-Contract:
-${contractContent}`,
-        },
-      ];
     }
 
     const langMap: Record<string, string> = { kk: "Kazakh (Қазақ тілі)", ru: "Russian (Русский)", en: "English" };
@@ -135,62 +102,46 @@ Provide a comprehensive legal analysis in JSON format:
 
 Respond with raw JSON only. Do not include code blocks, markdown, or any other formatting.`;
 
-    messages.unshift({ role: "system", content: systemPrompt });
+    // Build user message content for Claude
+    let userContent: Anthropic.MessageParam["content"];
 
-    // Call LLM API with streaming and buffer JSON response
-    const response = await fetch("https://apps.abacus.ai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.ABACUSAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        messages: messages,
-        stream: true,
-        max_tokens: 4000,
-        response_format: { type: "json_object" },
-      }),
+    if (contractContent.startsWith("PDF_BASE64:")) {
+      const base64Data = contractContent.replace("PDF_BASE64:", "");
+      userContent = [
+        {
+          type: "document",
+          source: {
+            type: "base64",
+            media_type: "application/pdf",
+            data: base64Data,
+          },
+        },
+        {
+          type: "text",
+          text: `Analyze this contract from the perspective of a ${clientPosition}${isCrossBorder ? " in a cross-border transaction" : ""}${industryType ? ` in the ${industryType} industry` : ""} under Kazakhstan law.`,
+        },
+      ];
+    } else {
+      userContent = `Analyze the following contract from the perspective of a ${clientPosition}${isCrossBorder ? " in a cross-border transaction" : ""}${industryType ? ` in the ${industryType} industry` : ""} under Kazakhstan law.
+
+Contract:
+${contractContent}`;
+    }
+
+    // Call Claude API
+    const message = await anthropic.messages.create({
+      model: "claude-opus-4-6",
+      max_tokens: 4000,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userContent }],
     });
 
-    if (!response.ok) {
-      throw new Error("LLM API request failed");
+    const responseContent = message.content[0];
+    if (responseContent.type !== "text") {
+      throw new Error("Unexpected response type from Claude");
     }
 
-    const reader = response.body?.getReader();
-    if (!reader) {
-      throw new Error("No response body");
-    }
-
-    const decoder = new TextDecoder();
-    let buffer = "";
-    let partialRead = "";
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      partialRead += decoder.decode(value, { stream: true });
-      let lines = partialRead.split("\n");
-      partialRead = lines.pop() || "";
-
-      for (const line of lines) {
-        if (line.startsWith("data: ")) {
-          const data = line.slice(6);
-          if (data === "[DONE]") {
-            break;
-          }
-          try {
-            const parsed = JSON.parse(data);
-            buffer += parsed?.choices?.[0]?.delta?.content || "";
-          } catch (e) {
-            // Skip invalid JSON
-          }
-        }
-      }
-    }
-
-    const analysisResult = JSON.parse(buffer);
+    const analysisResult = JSON.parse(responseContent.text);
 
     // Save to database
     const analysis = await prisma.contractAnalysis.create({

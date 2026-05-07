@@ -117,7 +117,7 @@ export default function SettingsPage() {
         <CardContent className="space-y-3">
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-500">LLM Provider</span>
-            <span className="font-medium">Abacus.ai (gpt-4.1-mini)</span>
+            <span className="font-medium">Anthropic Claude (claude-opus-4-6)</span>
           </div>
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-500">Database</span>

@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
+import Anthropic from "@anthropic-ai/sdk";
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 export const dynamic = "force-dynamic";
 
@@ -33,29 +36,19 @@ Return ONLY valid JSON (no markdown, no code blocks):
 
 Set isValid=true if the document matches the expected type. Set isValid=false if it clearly does NOT match.`;
 
-    const response = await fetch("https://apps.abacus.ai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.ABACUSAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        messages: [
-          { role: "system", content: "You are a document classification assistant. Respond with JSON only." },
-          { role: "user", content: prompt },
-        ],
-        max_tokens: 200,
-        response_format: { type: "json_object" },
-      }),
+    const message = await anthropic.messages.create({
+      model: "claude-opus-4-6",
+      max_tokens: 200,
+      system: "You are a document classification assistant. Respond with JSON only.",
+      messages: [{ role: "user", content: prompt }],
     });
 
-    if (!response.ok) {
+    const responseContent = message.content[0];
+    if (responseContent.type !== "text") {
       return NextResponse.json({ isValid: true });
     }
 
-    const data = await response.json();
-    const result = JSON.parse(data.choices?.[0]?.message?.content || "{}");
+    const result = JSON.parse(responseContent.text);
 
     return NextResponse.json({
       isValid: result.confidence >= 70 && result.isValid !== false,
