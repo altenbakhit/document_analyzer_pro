@@ -47,6 +47,7 @@ interface Rekv {
   bin: string;
   director: string;
   position: string;
+  basis: string;
   address: string;
   bank: string;
   bik: string;
@@ -55,7 +56,7 @@ interface Rekv {
 }
 
 const emptyRekv: Rekv = {
-  company: "", bin: "", director: "", position: "",
+  company: "", bin: "", director: "", position: "", basis: "",
   address: "", bank: "", bik: "", iik: "", kbe: "",
 };
 
@@ -281,6 +282,7 @@ ${bodyHtml}
     { label: "БИН", key: "bin", placeholder: "000000000000" },
     { label: "Руководитель (ФИО)", key: "director", placeholder: "Иванов Иван Иванович" },
     { label: "Должность", key: "position", placeholder: "Директор" },
+    { label: "Основание (Устав/Доверенность)", key: "basis", placeholder: "Устава" },
     { label: "Юридический адрес", key: "address", placeholder: "г. Алматы, ул. ..." },
     { label: "Банк", key: "bank", placeholder: "АО «Халык Банк»" },
     { label: "БИК", key: "bik", placeholder: "HSBKKZKX" },
